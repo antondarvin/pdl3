@@ -1,0 +1,12 @@
+{
+  "name": "virtual-herbal-garden",
+  "version": "1.0.0",
+  "description": "Virtual Herbal Garden – AYUSH & Vastu Garden Planner",
+  "private": true,
+  "scripts": {
+    "client": "npm --prefix client run dev",
+    "server": "npm --prefix server run start",
+    "dev": "node start-dev.js",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+  }
+}

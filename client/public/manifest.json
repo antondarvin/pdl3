@@ -1,0 +1,17 @@
+{
+  "name": "Virtual Herbal Garden – AYUSH & Vastu Planner",
+  "short_name": "AYUSH Garden",
+  "description": "Explore AYUSH medicinal plants, Vastu-based placement, room scanning & 3D AR garden planning.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f2212",
+  "theme_color": "#1b4332",
+  "icons": [
+    {
+      "src": "/leaf.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

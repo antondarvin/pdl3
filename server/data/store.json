@@ -1,0 +1,1430 @@
+{
+  "users": [
+    {
+      "_id": "user_1791383395743_sjbapm",
+      "name": "Aarav Sharma",
+      "email": "demo@ayushgarden.org",
+      "password": "$2a$10$yEWzTy3KwZDy8/P/qlnfg.0B3uPI5FgLOUmncA18eVTkiE08q.JN2",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      "termsAccepted": true,
+      "createdAt": "2026-10-07T14:29:55.743Z"
+    }
+  ],
+  "plants": [
+    {
+      "_id": "plant_1",
+      "name": "Tulsi (Holy Basil)",
+      "scientificName": "Ocimum sanctum (Ocimum tenuiflorum)",
+      "family": "Lamiaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Revered in AYUSH tradition as the 'Queen of Herbs' and an adaptogen that promotes longevity, mental balance, and respiratory wellness.",
+      "appearance": "Upright aromatic subshrub with green to purple serrated leaves, square stems, and spires of purple-white flowers.",
+      "height": "45 - 60 cm (1.5 - 2 ft)",
+      "growthHabit": "Bushy annual or perennial herb",
+      "suitableEnvironment": "Warm, sunny courtyards, well-lit balconies, and east-facing windowsills",
+      "soil": "Rich, well-draining loamy soil with organic compost (pH 6.0 - 7.5)",
+      "sunlight": "High (5-6 hours direct morning sun)",
+      "watering": "Moderate (allow top inch of soil to dry between waterings)",
+      "spaceRequired": "Small (1 x 1 ft)",
+      "indoorOutdoor": "Both (sunny window indoors or balcony)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "North",
+        "North-East",
+        "East"
+      ],
+      "vastuExplanation": "Traditionally revered in Vastu Shastra as the most auspicious plant for North, East, and North-East (Ishanya corner), considered to harmonize spiritual energy and bring serenity.",
+      "traditionalUses": "Traditionally used for respiratory ease, relieving mild cough, promoting digestion, and as an adaptogen for natural resilience.",
+      "plantPartsUsed": [
+        "Leaves",
+        "Seeds",
+        "Stem"
+      ],
+      "traditionalPreparation": "Fresh leaves brewed into warm infusion with ginger, or taken as leaf decoction (Kwath/Kashayam).",
+      "precautions": "Educational context: May moderately affect blood clotting when taken in high concentrated doses. Not a substitute for medical emergency treatment.",
+      "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "tulsi",
+        "potColor": "#c25e37",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#9b5de5",
+        "heightScale": 1,
+        "leafDensity": 1.2
+      },
+      "createdAt": "2026-10-07T14:29:55.528Z"
+    },
+    {
+      "_id": "plant_2",
+      "name": "Ashwagandha (Indian Ginseng)",
+      "scientificName": "Withania somnifera",
+      "family": "Solanaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "A premier Rasayana (rejuvenator) in Ayurveda renowned for nourishing vital energy (Ojas), combating fatigue, and promoting restful sleep.",
+      "appearance": "Small woody shrub with dull green elliptic leaves, tiny bell-shaped yellow-green flowers, and bright red berries in papery calyces.",
+      "height": "60 - 100 cm (2 - 3.5 ft)",
+      "growthHabit": "Erect branching perennial subshrub",
+      "suitableEnvironment": "Warm semi-arid climate, dry sunny garden beds, and medium planters",
+      "soil": "Sandy loam or light dry soil with excellent drainage (pH 7.5 - 8.0)",
+      "sunlight": "High (Full sun, drought tolerant)",
+      "watering": "Low (Very drought tolerant, sensitive to root rot)",
+      "spaceRequired": "Medium (2 x 2 ft)",
+      "indoorOutdoor": "Outdoor (or very sunny terrace)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "East",
+        "South-East",
+        "North-East"
+      ],
+      "vastuExplanation": "Traditionally associated with vitality, strength, and grounding energy when placed along East or South-East zones.",
+      "traditionalUses": "Traditionally valued for stamina, stress balance, nervous system rejuvenation, and supporting restorative sleep.",
+      "plantPartsUsed": [
+        "Roots",
+        "Berries",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Fine root powder (Churna) traditionally mixed with warm milk and organic honey at bedtime.",
+      "precautions": "Educational context: Avoid during active pregnancy without practitioner supervision. Consult healthcare provider if having thyroid or autoimmune conditions.",
+      "image": "https://images.unsplash.com/photo-1546842931-886c185b4c8c?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "ashwagandha",
+        "potColor": "#7f5539",
+        "foliageColor": "#386641",
+        "flowerColor": "#bc4749",
+        "heightScale": 1.3,
+        "leafDensity": 1
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_3",
+      "name": "Aloe Vera (Ghritkumari)",
+      "scientificName": "Aloe barbadensis miller",
+      "family": "Asphodelaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Known in traditional texts as Ghritkumari, this cooling succulent is celebrated for skin rejuvenation, liver support, and soothing digestion.",
+      "appearance": "Stemless succulent rosette with thick, fleshy lanceolate serrated leaves with translucent gel core.",
+      "height": "40 - 60 cm (1.5 - 2 ft)",
+      "growthHabit": "Clumping stemless succulent",
+      "suitableEnvironment": "Sunny indoor windowsills, balconies, dry warm verandas",
+      "soil": "Cactus or succulent potting mix, well-draining sandy soil",
+      "sunlight": "Medium to High (Bright indirect to gentle direct sunlight)",
+      "watering": "Low (Water thoroughly only when soil is completely dry)",
+      "spaceRequired": "Small (1.5 x 1.5 ft)",
+      "indoorOutdoor": "Both (thrives indoors in bright light)",
+      "maintenanceLevel": "Very Easy",
+      "vastuDirections": [
+        "North",
+        "East",
+        "North-East"
+      ],
+      "vastuExplanation": "In traditional Vastu, Aloe Vera is considered to attract positive ambient energy and purify living spaces when kept in the East or North.",
+      "traditionalUses": "Topical soothing for skin irritations, traditional digestive tonic, cooling Pitta dosha.",
+      "plantPartsUsed": [
+        "Inner leaf gel",
+        "Leaf skin"
+      ],
+      "traditionalPreparation": "Fresh inner leaf gel rinsed thoroughly to remove yellow aloin latex before topical or culinary use.",
+      "precautions": "Educational context: The yellow latex beneath the rind has potent laxative properties; use inner transparent gel only.",
+      "image": "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "aloe",
+        "potColor": "#ddb892",
+        "foliageColor": "#40916c",
+        "flowerColor": "#e07a5f",
+        "heightScale": 0.9,
+        "leafDensity": 0.8
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_4",
+      "name": "Neem (Indian Lilac)",
+      "scientificName": "Azadirachta indica",
+      "family": "Meliaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Known as 'Arishta' (reliever of sickness) in Sanskrit, Neem is the cornerstone of AYUSH blood purification and skin health.",
+      "appearance": "Graceful tree with pinnate compound bright green serrated leaflets and fragrant small white star blossoms.",
+      "height": "Pruned container: 1 - 2 m (Can grow larger in ground)",
+      "growthHabit": "Fast-growing evergreen tree (can be kept in large pots)",
+      "suitableEnvironment": "Outdoor courtyards, terraces, backyards with plenty of warmth",
+      "soil": "Tolerates poor soils; prefers deep sandy-clay loam",
+      "sunlight": "High (Full blazing sun)",
+      "watering": "Low to Moderate (Deep watering once weekly)",
+      "spaceRequired": "Large (3 x 3 ft in deep containers)",
+      "indoorOutdoor": "Outdoor (terrace or yard)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "North-West",
+        "West",
+        "South"
+      ],
+      "vastuExplanation": "Traditionally positioned in outer compound or North-West/West to filter incoming breezes and ward off pests and negative energy.",
+      "traditionalUses": "Skin clarifying, oral hygiene (Datun), natural antimicrobial support, traditional blood purifier.",
+      "plantPartsUsed": [
+        "Leaves",
+        "Bark",
+        "Seeds",
+        "Twigs"
+      ],
+      "traditionalPreparation": "Fresh leaf water bath for skin soothing; paste of leaves applied externally.",
+      "precautions": "Educational context: Highly bitter; internal use of seed oil is contraindicated. Excessive internal consumption not advised.",
+      "image": "https://images.unsplash.com/photo-1588628566587-dbd176de94b4?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "neem",
+        "potColor": "#6b705c",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#fdf0d5",
+        "heightScale": 1.6,
+        "leafDensity": 1.4
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_5",
+      "name": "Brahmi (Water Hyssop)",
+      "scientificName": "Bacopa monnieri",
+      "family": "Plantaginaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Renowned 'Medhya Rasayana' (intellect promoter) in Ayurveda and Siddha, celebrated for enhancing memory, focus, and cognitive tranquility.",
+      "appearance": "Creeping succulent herb with small oblong fleshy leaves and delicate white-blue 4-5 lobed flowers.",
+      "height": "10 - 20 cm (trailing ground cover / hanging pot)",
+      "growthHabit": "Spreading wetland perennial creeper",
+      "suitableEnvironment": "Moist planters, indoor water trays, shaded balconies, near water features",
+      "soil": "Rich wet, boggy or aquatic potting soil, high organic matter",
+      "sunlight": "Medium (Partial shade to filtered morning sun)",
+      "watering": "High (Soil must remain constantly damp; thrives with moist tray)",
+      "spaceRequired": "Small (1 x 1 ft or hanging basket)",
+      "indoorOutdoor": "Both (needs constant soil moisture)",
+      "maintenanceLevel": "Moderate",
+      "vastuDirections": [
+        "North",
+        "North-East",
+        "East"
+      ],
+      "vastuExplanation": "Associated with wisdom, Saraswati energy, and mental peace; ideally positioned in quiet North or North-East study areas.",
+      "traditionalUses": "Sharpening memory, easing mental fatigue, nervous relaxation, traditional hair oils.",
+      "plantPartsUsed": [
+        "Whole aerial herb",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Ghee cooked with Brahmi juice (Brahmi Ghrita) or fresh leaf tea with a drop of honey.",
+      "precautions": "Educational context: May cause mild digestive upset if taken on an empty stomach. Always consult a certified AYUSH physician.",
+      "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "brahmi",
+        "potColor": "#588157",
+        "foliageColor": "#52b788",
+        "flowerColor": "#e0e1dd",
+        "heightScale": 0.6,
+        "leafDensity": 1.5
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_6",
+      "name": "Giloy / Guduchi (Heart-leaved Moonseed)",
+      "scientificName": "Tinospora cordifolia",
+      "family": "Menispermaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Celebrated as 'Amrita' (nectar of immortality) in Ayurveda for building deep immune resistance, detoxifying, and balancing all three Doshas.",
+      "appearance": "Extensive deciduous climbing vine with succulent grooved stems and heart-shaped glossy leaves.",
+      "height": "Vine: 2 - 4 m (requires trellis or support)",
+      "growthHabit": "Twining perennial climber",
+      "suitableEnvironment": "Sunny balcony railings, outdoor garden trellises, compound walls",
+      "soil": "Well-draining loam to sandy soil",
+      "sunlight": "Medium to High (Partial sun to full sun)",
+      "watering": "Moderate (Resilient once established)",
+      "spaceRequired": "Medium (Requires vertical climbing support)",
+      "indoorOutdoor": "Outdoor (sunny balcony with trellis)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "East",
+        "North",
+        "North-East"
+      ],
+      "vastuExplanation": "Auspicious climber considered in traditional Indian home planning to weave a protective, vitality-enhancing shield around courtyards.",
+      "traditionalUses": "Immune defense, regulating recurring mild fevers, digestive fire (Agni) support, liver balance.",
+      "plantPartsUsed": [
+        "Mature stems",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Fresh crushed stem boiled into decoction (Kashayam) or concentrated water extract (Guduchi Satva).",
+      "precautions": "Educational context: Those on blood-sugar medication should monitor levels as Giloy traditionally supports glucose balance.",
+      "image": "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "giloy",
+        "potColor": "#344e41",
+        "foliageColor": "#40916c",
+        "flowerColor": "#95d5b2",
+        "heightScale": 1.5,
+        "leafDensity": 1.3
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_7",
+      "name": "Amla (Indian Gooseberry)",
+      "scientificName": "Phyllanthus emblica",
+      "family": "Phyllanthaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "One of the richest natural sources of Vitamin C and the cornerstone fruit of Chyawanprash, embodying all tastes except salty.",
+      "appearance": "Small to medium tree with delicate feathery light-green foliage and pale greenish-yellow globose fruits.",
+      "height": "Pruned container: 1 - 1.5 m",
+      "growthHabit": "Deciduous small tree or pruned large container shrub",
+      "suitableEnvironment": "Spacious sunny terraces, garden corners, open courtyards",
+      "soil": "Deep, well-drained loamy or clay soil with good drainage",
+      "sunlight": "High (Full direct sun)",
+      "watering": "Moderate (water deeply when dry)",
+      "spaceRequired": "Large (2.5 x 2.5 ft container)",
+      "indoorOutdoor": "Outdoor",
+      "maintenanceLevel": "Moderate",
+      "vastuDirections": [
+        "East",
+        "North-East",
+        "North"
+      ],
+      "vastuExplanation": "Traditionally considered sacred and spiritually pure; Vastu assigns it to East or North-East to foster family prosperity and health.",
+      "traditionalUses": "Anti-aging Rasayana, hair health, digestion, eyesight support, antioxidant resilience.",
+      "plantPartsUsed": [
+        "Fruits",
+        "Leaves",
+        "Bark"
+      ],
+      "traditionalPreparation": "Fresh fruit juice with honey, dried fruit powder (Triphala component), amla murabba.",
+      "precautions": "Educational context: Sour and cold potency; consume moderately during late evenings if prone to throat phlegm.",
+      "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "amla",
+        "potColor": "#a3b18a",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#e9d8a6",
+        "heightScale": 1.4,
+        "leafDensity": 1.2
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_8",
+      "name": "Shatavari (Wild Asparagus)",
+      "scientificName": "Asparagus racemosus",
+      "family": "Asparagaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Translated as 'She who possesses a hundred husbands', Shatavari is the ultimate feminine tonic, adaptogen, and cooling rejuvenator.",
+      "appearance": "Climbing thorny subshrub with delicate needle-like cladodes (leaves) and fragrant white tiny blossoms.",
+      "height": "1 - 2 m (climbing habit)",
+      "growthHabit": "Thorny twining woody creeper with tuberous roots",
+      "suitableEnvironment": "Warm sunny or partial-sun garden spaces, outdoor planters with trellis",
+      "soil": "Rich well-drained sandy loam soil",
+      "sunlight": "Medium to High (Partial shade to morning sun)",
+      "watering": "Moderate (Tolerant once tubers develop)",
+      "spaceRequired": "Medium (2 x 2 ft)",
+      "indoorOutdoor": "Outdoor (or bright balcony)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "North",
+        "North-West",
+        "East"
+      ],
+      "vastuExplanation": "Traditionally associated with nurturing, lunar energy, and feminine harmony in the North and North-West sectors.",
+      "traditionalUses": "Female reproductive wellness, lactation support, soothing gastric acidity, nourishing Ojas.",
+      "plantPartsUsed": [
+        "Tuberous roots"
+      ],
+      "traditionalPreparation": "Root powder boiled in organic milk with cardamom and raw sugar (Shatavari Ksheerapaka).",
+      "precautions": "Educational context: Caution advised if sensitive to asparagus family plants or estrogen-sensitive conditions.",
+      "image": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "shatavari",
+        "potColor": "#b08968",
+        "foliageColor": "#52b788",
+        "flowerColor": "#ffffff",
+        "heightScale": 1.2,
+        "leafDensity": 1.3
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_9",
+      "name": "Lemongrass (Karpuravalli / Cymbopogon)",
+      "scientificName": "Cymbopogon citratus",
+      "family": "Poaceae",
+      "ayushSystem": "Unani",
+      "description": "A fast-growing fragrant grass widely utilized in Unani and Ayurveda for digestive invigoration, soothing headaches, and refreshing beverages.",
+      "appearance": "Dense tussock grass with long slender arching aromatic leaves smelling intensely of fresh lemon.",
+      "height": "60 - 120 cm (2 - 4 ft)",
+      "growthHabit": "Clumping perennial ornamental grass",
+      "suitableEnvironment": "Sunny balconies, terrace gardens, outdoor border edges",
+      "soil": "Rich, sandy well-draining soil",
+      "sunlight": "High (Full sun, at least 6 hours)",
+      "watering": "Moderate (Keeps lush with regular watering)",
+      "spaceRequired": "Medium (2 x 2 ft pot)",
+      "indoorOutdoor": "Both (thrives in sunny balcony)",
+      "maintenanceLevel": "Very Easy",
+      "vastuDirections": [
+        "North",
+        "East",
+        "North-West"
+      ],
+      "vastuExplanation": "Citrus aroma is believed in traditional spatial practices to dispel stale air, promote mental alertness, and uplift ambient mood.",
+      "traditionalUses": "Digestive gas relief, soothing nervous tension, herbal teas for cold and mild congestion.",
+      "plantPartsUsed": [
+        "Leaves",
+        "Lower stalk bases"
+      ],
+      "traditionalPreparation": "Stalks bruised and simmered into herbal tea with mint, cinnamon, and honey.",
+      "precautions": "Educational context: Highly safe culinary herb; essential oil must be diluted before topical skin contact.",
+      "image": "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "lemongrass",
+        "potColor": "#6c584c",
+        "foliageColor": "#70e000",
+        "flowerColor": "#ccff33",
+        "heightScale": 1.1,
+        "leafDensity": 1.6
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_10",
+      "name": "Pudina (Spearmint / Peppermint)",
+      "scientificName": "Mentha spicata",
+      "family": "Lamiaceae",
+      "ayushSystem": "Unani",
+      "description": "A staple in Unani (Tibbi) medicine and Ayurveda (Pudina) for cooling digestive heat, relieving nausea, and refreshing the senses.",
+      "appearance": "Fast-spreading herbaceous ground cover with crinkled bright green serrated leaves and square aromatic stems.",
+      "height": "20 - 40 cm (0.8 - 1.3 ft)",
+      "growthHabit": "Vigorous spreading perennial runner",
+      "suitableEnvironment": "Kitchen windowsills, shady balconies, standalone pots to contain roots",
+      "soil": "Rich moist potting compost, pH 6.5 - 7.0",
+      "sunlight": "Medium (Morning sun with afternoon shade)",
+      "watering": "Moderate to High (Likes damp, fertile soil)",
+      "spaceRequired": "Small (1 x 1 ft container)",
+      "indoorOutdoor": "Both (excellent kitchen herb)",
+      "maintenanceLevel": "Very Easy",
+      "vastuDirections": [
+        "North",
+        "North-East",
+        "East"
+      ],
+      "vastuExplanation": "Associated with freshness, clarity of conversation, and cooling excess fire in northern and eastern family areas.",
+      "traditionalUses": "Gas and flatulence relief, cooling summer heat, soothing mild headaches, digestive refresh.",
+      "plantPartsUsed": [
+        "Fresh leaves",
+        "Flowering tops"
+      ],
+      "traditionalPreparation": "Fresh leaves crushed into cooling mint chutney with cumin or steeped in soothing tea.",
+      "precautions": "Educational context: Avoid excessive intake if suffering from severe acid reflux (GERD) as mint relaxes the esophageal sphincter.",
+      "image": "https://images.unsplash.com/photo-1628556270448-4d4e4148e1b1?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "mint",
+        "potColor": "#adc178",
+        "foliageColor": "#38b000",
+        "flowerColor": "#e2eafc",
+        "heightScale": 0.7,
+        "leafDensity": 1.4
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_11",
+      "name": "Shankhpushpi (Morning Glory Herb)",
+      "scientificName": "Convolvulus pluricaulis",
+      "family": "Convolvulaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Famous classical brain tonic used to induce mental peace, relieve anxiety, and support academic focus and memory retention.",
+      "appearance": "Prostrate spreading herb with small hairy leaves and beautiful solitary conch-shaped light blue or white blossoms.",
+      "height": "15 - 30 cm",
+      "growthHabit": "Spreading trailing perennial herb",
+      "suitableEnvironment": "Warm sunny courtyards, sunny hanging planters, terrace borders",
+      "soil": "Sandy loam or dry well-drained soil",
+      "sunlight": "High (Full sun)",
+      "watering": "Low to Moderate (Drought hardy)",
+      "spaceRequired": "Small (1 x 1 ft)",
+      "indoorOutdoor": "Outdoor (or very sunny balcony)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "North",
+        "North-East",
+        "East"
+      ],
+      "vastuExplanation": "Traditional Vastu holds blue and white flowering brain tonics in high regard in North-East study areas for academic focus.",
+      "traditionalUses": "Calming nervous restlessness, promoting sleep quality, cognitive enhancement, mental clarity.",
+      "plantPartsUsed": [
+        "Whole flowering herb"
+      ],
+      "traditionalPreparation": "Fresh plant juice or dry powder taken with warm cow's milk and honey in the morning.",
+      "precautions": "Educational context: Mild hypotensive effect; individuals with very low blood pressure should consult their doctor.",
+      "image": "https://images.unsplash.com/photo-1463936575829-25148e1db1b8?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "shankhpushpi",
+        "potColor": "#dde5b6",
+        "foliageColor": "#40916c",
+        "flowerColor": "#48cae4",
+        "heightScale": 0.6,
+        "leafDensity": 1.1
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_12",
+      "name": "Vasaka / Adhatoda (Malabar Nut)",
+      "scientificName": "Justicia adhatoda",
+      "family": "Acanthaceae",
+      "ayushSystem": "Siddha",
+      "description": "Celebrated in Siddha and Ayurveda as the premier bronchodilator herb, rich in the alkaloid vasicine for respiratory comfort.",
+      "appearance": "Dense evergreen shrub with large lanceolate dark green leaves and white tubular flowers striped with purple veins.",
+      "height": "1 - 2 m (3 - 6 ft)",
+      "growthHabit": "Dense bushy perennial shrub",
+      "suitableEnvironment": "Warm garden beds, sunny patio pots, terrace boundaries",
+      "soil": "Adaptable to various soils; prefers moist loamy soil",
+      "sunlight": "Medium to High (Partial shade to full sun)",
+      "watering": "Moderate (Regular watering)",
+      "spaceRequired": "Medium to Large (2 x 2 ft)",
+      "indoorOutdoor": "Outdoor (or large balcony pot)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "East",
+        "South-East",
+        "North"
+      ],
+      "vastuExplanation": "Fosters cleansing vitality and life breath (Prana); recommended near outdoor garden boundaries.",
+      "traditionalUses": "Easing bronchial spasms, clearing phlegm, supporting healthy lung function in coughs.",
+      "plantPartsUsed": [
+        "Fresh leaves",
+        "Roots",
+        "Flowers"
+      ],
+      "traditionalPreparation": "Fresh leaf decoction with ginger and black pepper, traditionally prepared as Vasavaleha.",
+      "precautions": "Educational context: Potent uterine stimulant; strictly contraindicated during pregnancy.",
+      "image": "https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "vasaka",
+        "potColor": "#6c584c",
+        "foliageColor": "#1b4332",
+        "flowerColor": "#f8f9fa",
+        "heightScale": 1.3,
+        "leafDensity": 1.2
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_13",
+      "name": "Bhringraj (False Daisy)",
+      "scientificName": "Eclipta prostrata (Eclipta alba)",
+      "family": "Asteraceae",
+      "ayushSystem": "Siddha",
+      "description": "The 'King of Hair' in Siddha and Ayurveda, renowned for restoring natural hair luster, pacifying Pitta, and revitalizing the liver.",
+      "appearance": "Small erect or creeping herb with dark lanceolate leaves and solitary dainty white daisy-like flower heads.",
+      "height": "25 - 45 cm (1 - 1.5 ft)",
+      "growthHabit": "Branching moisture-loving herb",
+      "suitableEnvironment": "Moist garden plots, shallow planters, shaded balconies",
+      "soil": "Rich, moisture-retentive loamy soil",
+      "sunlight": "Medium (Partial sun to bright dappled shade)",
+      "watering": "High (Prefers damp, marshy soil conditions)",
+      "spaceRequired": "Small (1 x 1 ft)",
+      "indoorOutdoor": "Both (balcony with good moisture)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "North",
+        "North-East",
+        "East"
+      ],
+      "vastuExplanation": "Brings tranquil rejuvenating energies, traditionally planted near morning water outlets or north herb patches.",
+      "traditionalUses": "Deep hair conditioning, preventing premature graying, supporting liver health and vision.",
+      "plantPartsUsed": [
+        "Whole plant",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Fresh juice infused into pure coconut or sesame oil (Bhringraj Taila) for scalp massage.",
+      "precautions": "Educational context: Safe topical herb; cold potency when taken internally in excess during winter.",
+      "image": "https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "bhringraj",
+        "potColor": "#a3b18a",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#ffffff",
+        "heightScale": 0.8,
+        "leafDensity": 1.2
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_14",
+      "name": "Kalmegh (Green Chiretta / King of Bitters)",
+      "scientificName": "Andrographis paniculata",
+      "family": "Acanthaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Famous in AYUSH for its intense bitterness and potent immune-protective, liver-protective, and digestive-stimulating prowess.",
+      "appearance": "Slender erect annual herb with dark green lanceolate leaves and small white flowers spotted with rose-purple markings.",
+      "height": "30 - 90 cm (1 - 3 ft)",
+      "growthHabit": "Erect branched annual herb",
+      "suitableEnvironment": "Warm sunny gardens, terrace pots, monsoon-favored locations",
+      "soil": "Fertile, moist sandy loam soil with good drainage",
+      "sunlight": "Medium to High (Morning sun with slight afternoon shade)",
+      "watering": "Moderate (Keep moderately moist)",
+      "spaceRequired": "Small (1 x 1 ft)",
+      "indoorOutdoor": "Outdoor (or sunny balcony)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "East",
+        "South-East",
+        "West"
+      ],
+      "vastuExplanation": "Symbolizes sharp discernment and purification; dispels sluggishness when positioned along sunny eastern perimeters.",
+      "traditionalUses": "Natural liver protection, managing seasonal colds and viral fevers, stimulating sluggish appetite.",
+      "plantPartsUsed": [
+        "Aerial parts",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Decoction of dried leaves (Kashaya) or powdered herb taken with warm water.",
+      "precautions": "Educational context: Extreme bitter taste; contraindicated in pregnancy due to traditional emmenagogue properties.",
+      "image": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "kalmegh",
+        "potColor": "#588157",
+        "foliageColor": "#1b4332",
+        "flowerColor": "#f8edeb",
+        "heightScale": 1,
+        "leafDensity": 1
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_15",
+      "name": "Turmeric (Haldi / Haridra)",
+      "scientificName": "Curcuma longa",
+      "family": "Zingiberaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "The golden jewel of AYUSH medicine, sacred in rituals and unmatched in traditional anti-inflammatory, detoxifying, and skin-beautifying actions.",
+      "appearance": "Stemless perennial with large broad glossy green leaves rising from fragrant golden-orange rhizomes.",
+      "height": "60 - 100 cm (2 - 3.3 ft)",
+      "growthHabit": "Rhizomatous clumping herbaceous perennial",
+      "suitableEnvironment": "Warm humid balconies, partially shaded verandas, wide growing containers",
+      "soil": "Loose friable rich composted soil with excellent drainage",
+      "sunlight": "Medium (Filtered bright light or partial morning sun)",
+      "watering": "Moderate to High (Keep consistently damp without standing water)",
+      "spaceRequired": "Medium (1.5 x 1.5 ft wide pot)",
+      "indoorOutdoor": "Both (thrives in warm bright spots)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "North-East",
+        "East",
+        "North"
+      ],
+      "vastuExplanation": "Revered as a divine purifier associated with Jupiter (Guru), wealth, and sanctity. Highly auspicious in the North-East zone.",
+      "traditionalUses": "Natural joint comfort, skin glow (Ubtan), wound cleansing, metabolic balance, golden milk.",
+      "plantPartsUsed": [
+        "Rhizomes (fresh and cured)"
+      ],
+      "traditionalPreparation": "Fresh rhizome grated into warm milk with black pepper and ghee (Haldi Doodh).",
+      "precautions": "Educational context: Therapeutic high-dose extracts may interact with blood thinners. Use culinary quantities freely.",
+      "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "turmeric",
+        "potColor": "#dda15e",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#fefae0",
+        "heightScale": 1.1,
+        "leafDensity": 1.3
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_16",
+      "name": "Ginger (Adrak / Shunthi)",
+      "scientificName": "Zingiber officinale",
+      "family": "Zingiberaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Celebrated as 'Vishwabheshaja' (the universal medicine) for enkindling digestive fire (Agni), relieving nausea, and soothing throat irritation.",
+      "appearance": "Upright reed-like leafy stems with narrow lanceolate foliage rising from pungent underground knobby rhizomes.",
+      "height": "60 - 90 cm (2 - 3 ft)",
+      "growthHabit": "Perennial reed-like herb with underground rhizomes",
+      "suitableEnvironment": "Warm sheltered balconies, bright verandas, kitchen garden planters",
+      "soil": "Loose rich organic potting mix with plenty of vermicompost",
+      "sunlight": "Medium (Dappled sunlight or gentle morning light)",
+      "watering": "Moderate (Moist but free-draining)",
+      "spaceRequired": "Medium (1.5 x 1.5 ft planter)",
+      "indoorOutdoor": "Both (bright indoor spots or covered patio)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "East",
+        "South-East",
+        "North"
+      ],
+      "vastuExplanation": "Represents the Agni (fire) element in harmony; placement in South-East or East activates culinary vitality and warmth.",
+      "traditionalUses": "Digestive spark, relieving travel nausea, soothing cold and sore throat, comforting winter warmth.",
+      "plantPartsUsed": [
+        "Fresh and dry rhizomes"
+      ],
+      "traditionalPreparation": "Fresh root sliced and boiled with tea leaves, crushed ginger with rock salt before meals.",
+      "precautions": "Educational context: Pungent and heating; reduce intake during acute stomach ulcers or burning sensations.",
+      "image": "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "ginger",
+        "potColor": "#bc6c25",
+        "foliageColor": "#40916c",
+        "flowerColor": "#e9c46a",
+        "heightScale": 0.9,
+        "leafDensity": 1.2
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_17",
+      "name": "Curry Leaf (Kadi Patta / Karivepila)",
+      "scientificName": "Murraya koenigii",
+      "family": "Rutaceae",
+      "ayushSystem": "Siddha",
+      "description": "Essential culinary and medicinal treasure in Siddha and Ayurveda, celebrated for antioxidant qualities, digestive tone, and lustrous dark hair.",
+      "appearance": "Small handsome tropical tree with dark green aromatic pinnate leaves and small white fragrant blossoms.",
+      "height": "1 - 2 m in containers",
+      "growthHabit": "Subtropical shrub or small tree",
+      "suitableEnvironment": "Warm sunny balconies, backyard garden beds, kitchen-side planters",
+      "soil": "Fertile slightly acidic to neutral loamy soil with compost",
+      "sunlight": "High (Full sun, minimum 5 hours)",
+      "watering": "Moderate (Allow surface soil to dry slightly)",
+      "spaceRequired": "Medium (2 x 2 ft pot)",
+      "indoorOutdoor": "Outdoor (or very sunny balcony)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "West",
+        "North-West",
+        "East"
+      ],
+      "vastuExplanation": "Traditionally positioned near kitchen entryways or western verandas to promote nutritional wellness and prosperity.",
+      "traditionalUses": "Digestive enzyme stimulation, controlling premature gray hair, traditional metabolic support.",
+      "plantPartsUsed": [
+        "Fresh leaves",
+        "Bark",
+        "Roots"
+      ],
+      "traditionalPreparation": "Fresh leaves tempered in ghee, or crushed into morning buttermilk with cumin.",
+      "precautions": "Educational context: Highly safe culinary herb; ensure organic growing without chemical pesticides.",
+      "image": "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "curryleaf",
+        "potColor": "#588157",
+        "foliageColor": "#1b4332",
+        "flowerColor": "#ffffff",
+        "heightScale": 1.2,
+        "leafDensity": 1.5
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_18",
+      "name": "Hibiscus / Jaswand (Japa Pushpa)",
+      "scientificName": "Hibiscus rosa-sinensis",
+      "family": "Malvaceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Sacred crimson blossom prized in traditional cosmetics and therapies for strengthening hair roots, cooling blood heat, and calming the mind.",
+      "appearance": "Vibrant evergreen shrub with glossy oval leaves and dramatic trumpet-shaped five-petaled blossoms with prominent stamens.",
+      "height": "1 - 2 m in containers",
+      "growthHabit": "Bushy evergreen flowering shrub",
+      "suitableEnvironment": "Sunny terraces, garden borders, warm balconies",
+      "soil": "Well-drained rich potting soil high in organic matter",
+      "sunlight": "High (Full direct sun for abundant blooming)",
+      "watering": "Moderate to High (Water thoroughly during blooming season)",
+      "spaceRequired": "Medium (2 x 2 ft pot)",
+      "indoorOutdoor": "Outdoor (bright sunny balcony)",
+      "maintenanceLevel": "Moderate",
+      "vastuDirections": [
+        "East",
+        "North-East",
+        "North"
+      ],
+      "vastuExplanation": "Red hibiscus is sacred to the Sun (Surya) and divine energy; traditionally planted in the East to invoke radiance, energy, and auspiciousness.",
+      "traditionalUses": "Hair nourishing packs, natural conditioner, cooling herbal teas, menstrual regularity support.",
+      "plantPartsUsed": [
+        "Flowers",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Fresh petals infused into warm hair oil or dried into cooling herbal tea.",
+      "precautions": "Educational context: May have mild emmenagogue properties; use in standard culinary amounts during pregnancy.",
+      "image": "https://images.unsplash.com/photo-1550950158-d0d960dff51b?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "hibiscus",
+        "potColor": "#b08968",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#e63946",
+        "heightScale": 1.3,
+        "leafDensity": 1.3
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_19",
+      "name": "Arnica (Mountain Daisy)",
+      "scientificName": "Arnica montana",
+      "family": "Asteraceae",
+      "ayushSystem": "Homeopathy",
+      "description": "The primary trauma and bruise remedy in Homeopathy, historically utilized in traditional alpine folk practices for muscular aches.",
+      "appearance": "Perennial herb with basal rosette of ovate leaves and bright golden-yellow daisy blossoms.",
+      "height": "20 - 50 cm",
+      "growthHabit": "Rhizomatous alpine herbaceous perennial",
+      "suitableEnvironment": "Cooler climate containers, temperate verandas, shaded rockeries",
+      "soil": "Acidic, nutrient-poor, sandy or peaty well-drained soil",
+      "sunlight": "Medium to High (Gentle sun, prefers cool roots)",
+      "watering": "Moderate (Evenly moist without waterlogging)",
+      "spaceRequired": "Small (1 x 1 ft)",
+      "indoorOutdoor": "Outdoor (in temperate/cooler zones)",
+      "maintenanceLevel": "Moderate",
+      "vastuDirections": [
+        "North",
+        "North-West",
+        "East"
+      ],
+      "vastuExplanation": "Golden blossoms resonate with healing, recovery, and restorative calm when positioned along northern quiet zones.",
+      "traditionalUses": "Homeopathic preparation for trauma, sprains, post-workout soreness, and localized bruising.",
+      "plantPartsUsed": [
+        "Flowering heads"
+      ],
+      "traditionalPreparation": "Homeopathically potentized tinctures, topical herbal creams and liniments (external only).",
+      "precautions": "Educational context: Do not apply arnica herbal extract to broken open skin. Ingest only in potentized homeopathic form under guidance.",
+      "image": "https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "arnica",
+        "potColor": "#dda15e",
+        "foliageColor": "#52b788",
+        "flowerColor": "#ffb703",
+        "heightScale": 0.8,
+        "leafDensity": 1
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_20",
+      "name": "Calendula (Pot Marigold)",
+      "scientificName": "Calendula officinalis",
+      "family": "Homeopathy",
+      "ayushSystem": "Homeopathy",
+      "description": "Cherished in Homeopathic and Naturopathic traditions as a supreme topical vulnerary for rapid wound soothing and gentle tissue recovery.",
+      "appearance": "Cheerful bushy annual with aromatic oblong leaves and warm golden-orange daisy flowers that close at dusk.",
+      "height": "30 - 60 cm (1 - 2 ft)",
+      "growthHabit": "Free-branching upright annual herb",
+      "suitableEnvironment": "Sunny balconies, window boxes, garden flower beds",
+      "soil": "Average well-draining garden soil",
+      "sunlight": "High (Full sun to light partial shade)",
+      "watering": "Moderate (Water when top inch is dry)",
+      "spaceRequired": "Small (1 x 1 ft)",
+      "indoorOutdoor": "Both (sunny window or balcony)",
+      "maintenanceLevel": "Very Easy",
+      "vastuDirections": [
+        "North-East",
+        "East",
+        "North"
+      ],
+      "vastuExplanation": "Golden yellow and orange blossoms bring radiant solar warmth, optimism, and positive prana to morning sunlight sectors.",
+      "traditionalUses": "Gentle skin soothing, minor cuts, sunburn relief, comforting floral teas.",
+      "plantPartsUsed": [
+        "Flower heads / Petals"
+      ],
+      "traditionalPreparation": "Petals infused in olive or almond oil, or prepared into homeopathic mother tincture.",
+      "precautions": "Educational context: Individuals with Asteraceae / ragweed family allergies should test topical patch first.",
+      "image": "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "calendula",
+        "potColor": "#bc6c25",
+        "foliageColor": "#40916c",
+        "flowerColor": "#fb8500",
+        "heightScale": 0.8,
+        "leafDensity": 1.2
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_21",
+      "name": "Cinnamon / Dalchini (True Cinnamon)",
+      "scientificName": "Cinnamomum verum",
+      "family": "Lauraceae",
+      "ayushSystem": "Unani",
+      "description": "Prized across Unani and Ayurvedic traditions for stimulating peripheral circulation, sweetening digestive fires, and aromatic warmth.",
+      "appearance": "Glossy evergreen tree with ovate thick leaves that flush coppery-red when young, with strongly aromatic inner bark.",
+      "height": "Pruned container: 1 - 1.5 m",
+      "growthHabit": "Evergreen small tree / large container plant",
+      "suitableEnvironment": "Warm humid balconies, sunny sheltered verandas",
+      "soil": "Rich well-drained sandy loam soil with organic matter",
+      "sunlight": "Medium to High (Warm partial shade to sun)",
+      "watering": "Moderate (Keep consistently moist)",
+      "spaceRequired": "Medium to Large (2 x 2 ft pot)",
+      "indoorOutdoor": "Outdoor (or protected warm patio)",
+      "maintenanceLevel": "Moderate",
+      "vastuDirections": [
+        "South-East",
+        "East",
+        "South"
+      ],
+      "vastuExplanation": "Pungent warming spice tree associated with the fire (Agni) element; ideal in the South-East corner to stimulate enterprise and prosperity.",
+      "traditionalUses": "Metabolic and glucose support, warming cold constitutions, aromatic breath freshness, culinary spice.",
+      "plantPartsUsed": [
+        "Inner bark",
+        "Leaves"
+      ],
+      "traditionalPreparation": "Bark boiled with black tea or steeped with hot water and raw honey.",
+      "precautions": "Educational context: True Ceylon cinnamon contains very low coumarin compared to Cassia; avoid excessive medicinal quantities in pregnancy.",
+      "image": "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "cinnamon",
+        "potColor": "#7f5539",
+        "foliageColor": "#2d6a4f",
+        "flowerColor": "#e0a96d",
+        "heightScale": 1.4,
+        "leafDensity": 1.3
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    },
+    {
+      "_id": "plant_22",
+      "name": "Guggulu (Indian Bdellium Tree)",
+      "scientificName": "Commiphora mukul (Commiphora wightii)",
+      "family": "Burseraceae",
+      "ayushSystem": "Ayurveda",
+      "description": "Revered in AYUSH tradition for producing fragrant healing oleo-gum resin that scrapes toxins (Ama), supports joint mobility, and maintains lipids.",
+      "appearance": "Small thorny arid tree with papery peeling bark, sparse leaves, and small reddish flowers.",
+      "height": "1 - 1.5 m in container",
+      "growthHabit": "Spiny slow-growing arid subshrub",
+      "suitableEnvironment": "Dry sunny terraces, arid balconies, sunny rock gardens",
+      "soil": "Gravelly sandy dry soil with rapid drainage",
+      "sunlight": "High (Full direct desert sun)",
+      "watering": "Low (Very drought tolerant; water sparingly)",
+      "spaceRequired": "Medium (1.5 x 1.5 ft)",
+      "indoorOutdoor": "Outdoor (hot sunny spot)",
+      "maintenanceLevel": "Easy",
+      "vastuDirections": [
+        "South",
+        "South-West",
+        "West"
+      ],
+      "vastuExplanation": "Traditional Vastu associates hearty arid protective trees with the grounding South and South-West boundaries for stability.",
+      "traditionalUses": "Joint comfort, healthy lipid balance, natural metabolic cleansing, fragrant incense.",
+      "plantPartsUsed": [
+        "Purified gum resin (Shuddha Guggulu)"
+      ],
+      "traditionalPreparation": "Traditionally purified in herbal decoctions (Triphala Kwath) before being formulated into tablets.",
+      "precautions": "Educational context: Purified resin only; contraindicated in acute liver or kidney failure without physician guidance.",
+      "image": "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80",
+      "model3D": {
+        "type": "guggulu",
+        "potColor": "#582f0e",
+        "foliageColor": "#606c38",
+        "flowerColor": "#a37081",
+        "heightScale": 1.1,
+        "leafDensity": 0.9
+      },
+      "createdAt": "2026-10-07T14:29:55.529Z"
+    }
+  ],
+  "gardens": [
+    {
+      "_id": "garden_1791515926713_79sxd1",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "My Living Room Herbal Space",
+      "roomType": "Balcony",
+      "length": 11,
+      "width": 6,
+      "direction": "North-East",
+      "plants": [
+        {
+          "id": "placed_1791515907820_ednn",
+          "plantId": "plant_1",
+          "name": "Tulsi (Holy Basil)",
+          "scientificName": "Ocimum sanctum (Ocimum tenuiflorum)",
+          "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+          "x": 30,
+          "y": 61,
+          "rotation": 331,
+          "scale": 1,
+          "model3D": {
+            "type": "tulsi",
+            "potColor": "#c25e37",
+            "foliageColor": "#2d6a4f",
+            "flowerColor": "#9b5de5",
+            "heightScale": 1,
+            "leafDensity": 1.2
+          },
+          "potSizeFt": 1,
+          "spacingRequiredFt": 1.5
+        }
+      ],
+      "notes": "Sunlight: High, Space: Medium, Maintenance: Medium",
+      "unit": "ft",
+      "totalSquareFeet": 66,
+      "createdAt": "2026-10-09T03:18:46.713Z",
+      "updatedAt": "2026-10-09T03:18:46.713Z"
+    },
+    {
+      "_id": "garden_1791522235650_waztg8",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "My Living Room Herbal Space",
+      "roomType": "Balcony",
+      "length": 12,
+      "width": 8,
+      "direction": "North-East",
+      "plants": [
+        {
+          "id": "placed_1791522232763_8j6x",
+          "plantId": "plant_9",
+          "name": "Lemongrass (Karpuravalli / Cymbopogon)",
+          "scientificName": "Cymbopogon citratus",
+          "image": "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=800&q=80",
+          "x": 59.22977213370865,
+          "y": 59.978835326440645,
+          "rotation": 163,
+          "scale": 1,
+          "model3D": {
+            "type": "lemongrass",
+            "potColor": "#6c584c",
+            "foliageColor": "#70e000",
+            "flowerColor": "#ccff33",
+            "heightScale": 1.1,
+            "leafDensity": 1.6
+          },
+          "potSizeFt": 1.4,
+          "spacingRequiredFt": 2.5
+        },
+        {
+          "id": "placed_1791522232763_k384",
+          "plantId": "plant_9",
+          "name": "Lemongrass (Karpuravalli / Cymbopogon)",
+          "scientificName": "Cymbopogon citratus",
+          "image": "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=800&q=80",
+          "x": 57.25893473154437,
+          "y": 48.0140554352151,
+          "rotation": 284,
+          "scale": 1,
+          "model3D": {
+            "type": "lemongrass",
+            "potColor": "#6c584c",
+            "foliageColor": "#70e000",
+            "flowerColor": "#ccff33",
+            "heightScale": 1.1,
+            "leafDensity": 1.6
+          },
+          "potSizeFt": 1.4,
+          "spacingRequiredFt": 2.5
+        }
+      ],
+      "notes": "Sunlight: High, Space: Medium, Maintenance: Medium",
+      "unit": "ft",
+      "totalSquareFeet": 96,
+      "createdAt": "2026-10-09T05:03:55.650Z",
+      "updatedAt": "2026-10-09T05:03:55.650Z"
+    }
+  ],
+  "savedPlants": [
+    {
+      "_id": "sp_1791386097306_frcgr",
+      "userId": "user_1791383395743_sjbapm",
+      "plantId": "plant_1",
+      "savedAt": "2026-10-07T15:14:57.306Z"
+    }
+  ],
+  "quizQuestions": [
+    {
+      "_id": "quiz_1",
+      "question": "Which sacred herb is traditionally referred to as 'Queen of Herbs' and considered most auspicious in the North-East (Ishanya) direction?",
+      "type": "multiple-choice",
+      "options": [
+        "Tulsi (Holy Basil)",
+        "Neem",
+        "Ashwagandha",
+        "Amla"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "Tulsi (Ocimum sanctum) is deeply revered in Ayurveda and traditional Vastu Shastra for bringing positive pranic energy, tranquility, and air purification to the North and North-East.",
+      "ayushCategory": "Ayurveda"
+    },
+    {
+      "_id": "quiz_2",
+      "question": "According to traditional Vastu Shastra guidelines, which direction is traditionally associated with the Water/Clarity element and ideal for mind-enhancing herbs like Brahmi?",
+      "type": "multiple-choice",
+      "options": [
+        "South",
+        "South-West",
+        "North-East",
+        "South-East"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "The North-East (Ishanya corner) represents clarity, wisdom, and spiritual focus, making it the traditional choice for Medhya Rasayana herbs such as Brahmi and Tulsi.",
+      "ayushCategory": "Ayurveda"
+    },
+    {
+      "_id": "quiz_3",
+      "question": "Identify this plant: It has thick fleshy succulent leaves filled with soothing transparent gel, widely used in AYUSH for skin soothing and cooling digestion.",
+      "type": "plant-identification",
+      "image": "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=800&q=80",
+      "options": [
+        "Brahmi",
+        "Aloe Vera (Ghritkumari)",
+        "Shatavari",
+        "Giloy"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "Aloe Vera (Ghritkumari) is recognized by its thick, spiny-edged succulent leaves and cooling gel used across Ayurveda and Naturopathy.",
+      "ayushCategory": "Yoga & Naturopathy"
+    },
+    {
+      "_id": "quiz_4",
+      "question": "True or False: Traditional Vastu plant placements are considered scientific medical treatments that cure physical illnesses.",
+      "type": "true-false",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "False! Vastu guidelines are traditional and cultural architectural recommendations for aesthetic and spatial harmony. They do not constitute scientific medical treatments.",
+      "ayushCategory": "Ayurveda"
+    },
+    {
+      "_id": "quiz_5",
+      "question": "Which AYUSH plant is known as 'Amrita' (nectar of immortality) and grows as a heart-leaved deciduous climbing vine?",
+      "type": "multiple-choice",
+      "options": [
+        "Ashwagandha",
+        "Giloy (Guduchi)",
+        "Kalmegh",
+        "Vasaka"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "Giloy (Tinospora cordifolia) is renowned in Ayurveda for deep immune resilience and is distinguished by its heart-shaped leaves and grooved succulent stems.",
+      "ayushCategory": "Ayurveda"
+    },
+    {
+      "_id": "quiz_6",
+      "question": "In Siddha medicine and Ayurveda, which herb is famously hailed as 'Kesharaja' (King of Hair) for promoting hair vitality?",
+      "type": "multiple-choice",
+      "options": [
+        "Bhringraj (Eclipta alba)",
+        "Curry Leaf",
+        "Lemongrass",
+        "Arnica"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "Bhringraj is celebrated in Siddha and Ayurvedic literature as the primary botanical for hair nourishment and cooling liver heat.",
+      "ayushCategory": "Siddha"
+    },
+    {
+      "_id": "quiz_7",
+      "question": "Identify this aromatic grass: Releases a sharp citrus fragrance, used in Unani herbal teas for digestion and headache relief.",
+      "type": "plant-identification",
+      "image": "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=800&q=80",
+      "options": [
+        "Mint (Pudina)",
+        "Lemongrass (Cymbopogon)",
+        "Brahmi",
+        "Ginger"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "Lemongrass forms tall arching aromatic blades with a signature lemon scent, favored in Unani and Ayurvedic soothing beverages.",
+      "ayushCategory": "Unani"
+    },
+    {
+      "_id": "quiz_8",
+      "question": "True or False: Most AYUSH medicinal herbs like Tulsi and Hibiscus require at least 4 to 6 hours of sunlight daily for healthy growth.",
+      "type": "true-false",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "True! Herbs like Tulsi, Hibiscus, and Lemongrass thrive best in bright morning sun or full sunlight (4-6 hours) to produce their aromatic essential oils.",
+      "ayushCategory": "Yoga & Naturopathy"
+    },
+    {
+      "_id": "quiz_9",
+      "question": "Which bright golden blossom is the foremost Homeopathic and Naturopathic remedy for topical skin recovery and minor cuts?",
+      "type": "multiple-choice",
+      "options": [
+        "Calendula (Pot Marigold)",
+        "Shankhpushpi",
+        "Hibiscus",
+        "Ashwagandha"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "Calendula officinalis is renowned in Homeopathy as a gentle vulnerary flower that aids skin soothing and comfort.",
+      "ayushCategory": "Homeopathy"
+    },
+    {
+      "_id": "quiz_10",
+      "question": "Which warming spice plant is associated with the Fire (Agni) quadrant (South-East) in traditional home layout principles?",
+      "type": "multiple-choice",
+      "options": [
+        "Brahmi",
+        "Ginger / Cinnamon",
+        "Aloe Vera",
+        "Shankhpushpi"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "Pungent spices like Ginger and Cinnamon represent the warmth of the Fire (Agni) element, traditionally aligned with the South-East corner.",
+      "ayushCategory": "Unani"
+    }
+  ],
+  "quizResults": [
+    {
+      "_id": "qres_1791386097397_y6w1r5",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 9,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-07T15:14:57.397Z"
+    },
+    {
+      "_id": "qres_1791393503811_ub3tbc",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 9,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-07T17:18:23.811Z"
+    },
+    {
+      "_id": "qres_1791467891845_69ik70",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 9,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-08T13:58:11.845Z"
+    },
+    {
+      "_id": "qres_1791515845712_ckoys3",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 6,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-09T03:17:25.712Z"
+    },
+    {
+      "_id": "qres_1791520823442_wvkk5r",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 9,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-09T04:40:23.442Z"
+    },
+    {
+      "_id": "qres_1791522326619_hhvnn5",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 9,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-09T05:05:26.619Z"
+    }
+  ],
+  "userActivities": [
+    {
+      "_id": "act_1791522326624",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 9/10 (90%)",
+      "timestamp": "2026-10-09T05:05:26.624Z"
+    },
+    {
+      "_id": "act_1791522235652",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"My Living Room Herbal Space\" with 2 plants",
+      "timestamp": "2026-10-09T05:03:55.652Z"
+    },
+    {
+      "_id": "act_1791520823458",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "DELETE_GARDEN",
+      "details": "Removed a garden layout",
+      "timestamp": "2026-10-09T04:40:23.458Z"
+    },
+    {
+      "_id": "act_1791520823444",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 9/10 (90%)",
+      "timestamp": "2026-10-09T04:40:23.444Z"
+    },
+    {
+      "_id": "act_1791520823413",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UPDATE_GARDEN",
+      "details": "Updated layout \"Updated Automated Test Sanctuary\"",
+      "timestamp": "2026-10-09T04:40:23.413Z"
+    },
+    {
+      "_id": "act_1791520823399",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Automated Test Sanctuary\" with 1 plants",
+      "timestamp": "2026-10-09T04:40:23.399Z"
+    },
+    {
+      "_id": "act_1791520823365",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "SAVE_PLANT",
+      "details": "Saved Tulsi (Holy Basil) to personal collection",
+      "timestamp": "2026-10-09T04:40:23.366Z"
+    },
+    {
+      "_id": "act_1791520823332",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-09T04:40:23.332Z"
+    },
+    {
+      "_id": "act_1791515926715",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"My Living Room Herbal Space\" with 1 plants",
+      "timestamp": "2026-10-09T03:18:46.715Z"
+    },
+    {
+      "_id": "act_1791515845715",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 6/10 (60%)",
+      "timestamp": "2026-10-09T03:17:25.715Z"
+    },
+    {
+      "_id": "act_1791472677310",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-08T15:17:57.310Z"
+    },
+    {
+      "_id": "act_1791467891877",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "DELETE_GARDEN",
+      "details": "Removed a garden layout",
+      "timestamp": "2026-10-08T13:58:11.877Z"
+    },
+    {
+      "_id": "act_1791467891846",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 9/10 (90%)",
+      "timestamp": "2026-10-08T13:58:11.846Z"
+    },
+    {
+      "_id": "act_1791467891813",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UPDATE_GARDEN",
+      "details": "Updated layout \"Updated Automated Test Sanctuary\"",
+      "timestamp": "2026-10-08T13:58:11.813Z"
+    },
+    {
+      "_id": "act_1791467891772",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Automated Test Sanctuary\" with 1 plants",
+      "timestamp": "2026-10-08T13:58:11.772Z"
+    },
+    {
+      "_id": "act_1791467891757",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "SAVE_PLANT",
+      "details": "Saved Tulsi (Holy Basil) to personal collection",
+      "timestamp": "2026-10-08T13:58:11.757Z"
+    },
+    {
+      "_id": "act_1791467891712",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-08T13:58:11.712Z"
+    },
+    {
+      "_id": "act_1791429630224",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-08T03:20:30.224Z"
+    },
+    {
+      "_id": "act_1791393503829",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "DELETE_GARDEN",
+      "details": "Removed a garden layout",
+      "timestamp": "2026-10-07T17:18:23.829Z"
+    },
+    {
+      "_id": "act_1791393503812",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 9/10 (90%)",
+      "timestamp": "2026-10-07T17:18:23.812Z"
+    },
+    {
+      "_id": "act_1791393503785",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UPDATE_GARDEN",
+      "details": "Updated layout \"Updated Automated Test Sanctuary\"",
+      "timestamp": "2026-10-07T17:18:23.785Z"
+    },
+    {
+      "_id": "act_1791393503766",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Automated Test Sanctuary\" with 1 plants",
+      "timestamp": "2026-10-07T17:18:23.766Z"
+    },
+    {
+      "_id": "act_1791393503735",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "SAVE_PLANT",
+      "details": "Saved Tulsi (Holy Basil) to personal collection",
+      "timestamp": "2026-10-07T17:18:23.735Z"
+    },
+    {
+      "_id": "act_1791393503684",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-07T17:18:23.684Z"
+    },
+    {
+      "_id": "act_1791386097427",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "DELETE_GARDEN",
+      "details": "Removed a garden layout",
+      "timestamp": "2026-10-07T15:14:57.427Z"
+    },
+    {
+      "_id": "act_1791386097400",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 9/10 (90%)",
+      "timestamp": "2026-10-07T15:14:57.400Z"
+    },
+    {
+      "_id": "act_1791386097367",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UPDATE_GARDEN",
+      "details": "Updated layout \"Updated Automated Test Sanctuary\"",
+      "timestamp": "2026-10-07T15:14:57.367Z"
+    },
+    {
+      "_id": "act_1791386097336",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Automated Test Sanctuary\" with 1 plants",
+      "timestamp": "2026-10-07T15:14:57.336Z"
+    },
+    {
+      "_id": "act_1791386097308",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "SAVE_PLANT",
+      "details": "Saved Tulsi (Holy Basil) to personal collection",
+      "timestamp": "2026-10-07T15:14:57.308Z"
+    },
+    {
+      "_id": "act_1791386097261",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-07T15:14:57.261Z"
+    }
+  ]
+}
