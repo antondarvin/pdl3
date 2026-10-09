@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plant } from '../types';
 import { Plant3DViewer } from './Plant3DViewer';
-import { detectARCapabilities, ARCapabilityReport } from '../utils/arCapabilities';
+import { detectARCapabilities, ARCapabilityReport, requestOrientationPermission } from '../utils/arCapabilities';
 import {
   Camera,
   RotateCw,
@@ -235,11 +235,14 @@ export const ViewInYourSpaceModal: React.FC<ViewInYourSpaceModalProps> = ({
 
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    await requestOrientationPermission();
+                  } catch (_) {}
                   onClose();
                   onLaunchAR(plant);
                 }}
-                className="w-full sm:w-auto py-3.5 px-8 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold tracking-wider transition shadow-lg flex items-center justify-center gap-2"
+                className="w-full sm:w-auto py-3.5 px-8 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold tracking-wider transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Camera className="w-4 h-4 text-[#081711]" />
                 <span>Launch Camera AR Preview</span>

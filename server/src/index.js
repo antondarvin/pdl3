@@ -72,7 +72,7 @@ export default app;
 const isDirectRun = process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('server/src/index.js');
 
 if (isDirectRun && !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`🌿 Virtual Herbal Garden Server running on port ${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🌿 Virtual Herbal Garden Server running on port ${PORT} (0.0.0.0)`);
   });
 }

@@ -257,25 +257,66 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
+        const isHttpNonLocal = typeof window !== 'undefined' && 
+          window.location.protocol === 'http:' && 
+          window.location.hostname !== 'localhost' && 
+          window.location.hostname !== '127.0.0.1';
+        if (isHttpNonLocal) {
+          throw new Error('Mobile browsers restrict camera to HTTPS. Deploy to Vercel (free HTTPS) or use an HTTPS tunnel to activate live camera.');
+        }
         throw new Error('Camera hardware access is unavailable on this browser.');
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: { ideal: facing },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        },
-        audio: false,
-      });
 
-      if (videoRef.current) {
+      let stream: MediaStream | null = null;
+      // Tier 1: Optimal mobile constraints (1280x720)
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: { ideal: facing },
+            width: { ideal: 1280, max: 1920 },
+            height: { ideal: 720, max: 1080 }
+          },
+          audio: false,
+        });
+      } catch (tier1Err) {
+        // Tier 2: Flexible facingMode
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing },
+            audio: false,
+          });
+        } catch (tier2Err) {
+          // Tier 3: Any video track
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
+      }
+
+      if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.muted = true;
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn('Autoplay prevented on mobile:', playErr);
+        }
       }
       setStreamActive(true);
     } catch (err: any) {
       console.warn('Camera access denied or device not found:', err);
-      setCameraError('Camera access unavailable. Using optical spatial tracker.');
+      const isHttpNonLocal = typeof window !== 'undefined' && 
+        window.location.protocol === 'http:' && 
+        window.location.hostname !== 'localhost' && 
+        window.location.hostname !== '127.0.0.1';
+      if (isHttpNonLocal) {
+        setCameraError('Mobile browsers block camera on HTTP. Deploy to Vercel for live camera, or inspect in our 3D space!');
+      } else {
+        setCameraError(err.message || 'Camera access unavailable. Using optical spatial tracker.');
+      }
       setStreamActive(false);
     }
   };
@@ -557,12 +598,12 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
   };
 
   // Action: Touch / Tap Screen to reposition plant or measure
-  const handleScreenTap = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleInteractionPoint = (clientX: number, clientY: number) => {
     if (!mountRef.current || !cameraRef.current || !sceneRef.current) return;
 
     const rect = mountRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
     // Raycast onto ground plane y = -0.6
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.6);
@@ -593,6 +634,16 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
           setPlantPosition({ x: intersectPoint.x, y: -0.6, z: intersectPoint.z });
         }
       }
+    }
+  };
+
+  const handleScreenTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleInteractionPoint(e.clientX, e.clientY);
+  };
+
+  const handleScreenTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.changedTouches && e.changedTouches[0]) {
+      handleInteractionPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     }
   };
 
@@ -652,7 +703,9 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
       {/* 1. BACKGROUND CAMERA FEED (OR SPATIAL ROOM SIMULATION) */}
       <div 
         onClick={handleScreenTap}
+        onTouchEnd={handleScreenTouch}
         className="absolute inset-0 w-full h-full overflow-hidden cursor-crosshair z-0"
+        style={{ touchAction: 'manipulation' }}
       >
         {streamActive ? (
           <video
@@ -679,7 +732,9 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
       <div 
         ref={mountRef} 
         onClick={handleScreenTap}
+        onTouchEnd={handleScreenTouch}
         className="absolute inset-0 w-full h-full pointer-events-auto z-10" 
+        style={{ touchAction: 'manipulation' }}
       />
 
       {/* 3. TOP HUD BAR: BACK BUTTON, AR STATUS PILL, COMPASS, CAMERA CONTROLS */}

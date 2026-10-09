@@ -97,21 +97,50 @@ export const ARGardenCanvas: React.FC<ARGardenCanvasProps> = ({
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
+        const isHttpNonLocal = typeof window !== 'undefined' && 
+          window.location.protocol === 'http:' && 
+          window.location.hostname !== 'localhost' && 
+          window.location.hostname !== '127.0.0.1';
+        if (isHttpNonLocal) {
+          throw new Error('Mobile browsers restrict camera to HTTPS. Deploy to Vercel (free HTTPS) or switch to 3D mode.');
+        }
         throw new Error('Camera hardware access is unavailable on this browser.');
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        audio: false,
-      });
-      if (videoRef.current) {
+
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facing }, width: { ideal: 1280, max: 1920 }, height: { ideal: 720, max: 1080 } },
+          audio: false,
+        });
+      } catch (err1) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing },
+            audio: false,
+          });
+        } catch (err2) {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
+      }
+
+      if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.muted = true;
+        try {
+          await videoRef.current.play();
+        } catch (_) {}
       }
       setStreamActive(true);
       setTimeout(() => setSurfaceDetected(true), 1200);
     } catch (err: any) {
       console.warn('Camera could not be accessed:', err);
-      let msg = 'Camera permission was denied or camera hardware was not found.';
+      let msg = err.message || 'Camera permission was denied or camera hardware was not found.';
       if (err.name === 'NotAllowedError') {
         msg = 'Camera permission was denied in your browser settings. You can switch to the 3D garden planner.';
       } else if (err.name === 'NotFoundError') {
@@ -306,13 +335,13 @@ export const ARGardenCanvas: React.FC<ARGardenCanvasProps> = ({
     });
   }, [activeCatalogPlant, canonicalArDir]);
 
-  // Screen Tap to Move Plant in 3D Space
-  const handleCanvasTap = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Screen Tap or Touch to Move Plant in 3D Space
+  const handleCanvasInteraction = (clientX: number, clientY: number) => {
     if (!mountRef.current || !cameraRef.current || !selectedPlantId) return;
 
     const rect = mountRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.5);
     const raycaster = new THREE.Raycaster();
@@ -340,6 +369,17 @@ export const ARGardenCanvas: React.FC<ARGardenCanvasProps> = ({
       if (reticleRef.current) {
         reticleRef.current.position.set(intersect.x, -0.49, intersect.z);
       }
+    }
+  };
+
+  const handleCanvasTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleCanvasInteraction(e.clientX, e.clientY);
+  };
+
+  const handleCanvasTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      const touch = e.changedTouches[0];
+      handleCanvasInteraction(touch.clientX, touch.clientY);
     }
   };
 
@@ -499,7 +539,9 @@ export const ARGardenCanvas: React.FC<ARGardenCanvasProps> = ({
       <div
         ref={mountRef}
         onClick={handleCanvasTap}
+        onTouchEnd={handleCanvasTouch}
         className="absolute inset-0 w-full h-full z-10 cursor-crosshair"
+        style={{ touchAction: 'manipulation' }}
       />
 
       {/* 4. TOP HUD (Navigation, Mode, Controls) */}

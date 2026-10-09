@@ -1011,14 +1011,7 @@
       "updatedAt": "2026-10-09T05:03:55.650Z"
     }
   ],
-  "savedPlants": [
-    {
-      "_id": "sp_1791386097306_frcgr",
-      "userId": "user_1791383395743_sjbapm",
-      "plantId": "plant_1",
-      "savedAt": "2026-10-07T15:14:57.306Z"
-    }
-  ],
+  "savedPlants": [],
   "quizQuestions": [
     {
       "_id": "quiz_1",
@@ -1225,6 +1218,41 @@
     }
   ],
   "userActivities": [
+    {
+      "_id": "act_1791568573122",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-09T17:56:13.122Z"
+    },
+    {
+      "_id": "act_1791567691539",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UNSAVE_PLANT",
+      "details": "Removed a plant from saved collection",
+      "timestamp": "2026-10-09T17:41:31.539Z"
+    },
+    {
+      "_id": "act_1791567689273",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UNSAVE_PLANT",
+      "details": "Removed a plant from saved collection",
+      "timestamp": "2026-10-09T17:41:29.273Z"
+    },
+    {
+      "_id": "act_1791567688504",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "SAVE_PLANT",
+      "details": "Saved Ashwagandha (Indian Ginseng) to personal collection",
+      "timestamp": "2026-10-09T17:41:28.504Z"
+    },
+    {
+      "_id": "act_1791567675338",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-09T17:41:15.338Z"
+    },
     {
       "_id": "act_1791538548030",
       "userId": "user_1791383395743_sjbapm",

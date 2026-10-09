@@ -1,6 +1,18 @@
-const API_BASE =
-  import.meta.env.VITE_API_BASE ||
-  (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+const getApiBase = (): string => {
+  if (import.meta.env.VITE_API_BASE) {
+    return import.meta.env.VITE_API_BASE;
+  }
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  // When accessed from mobile phone via LAN IP (e.g. 192.168.x.x), connect to that IP on port 5000
+  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return `http://${window.location.hostname}:5000/api`;
+  }
+  return 'http://localhost:5000/api';
+};
+
+const API_BASE = getApiBase();
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('ayush_garden_token');

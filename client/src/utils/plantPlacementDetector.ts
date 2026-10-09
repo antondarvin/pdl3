@@ -233,7 +233,7 @@ export function evaluatePlacementSuitability(
  * Samples real video frame perceived luminance (0-255) using an offscreen canvas.
  */
 export function sampleVideoLuminance(video: HTMLVideoElement | null): number {
-  if (!video || video.readyState < 2) return 140;
+  if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return 140;
 
   try {
     const canvas = document.createElement('canvas');
