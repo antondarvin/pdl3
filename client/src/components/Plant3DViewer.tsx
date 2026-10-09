@@ -208,46 +208,46 @@ export const Plant3DViewer: React.FC<Plant3DViewerProps> = ({
   };
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-blue-950/5 via-slate-50 to-slate-100/80 border border-slate-200 shadow-inner ${className}`} style={{ height }}>
+    <div className={`relative w-full rounded-2xl overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#113827] via-[#0B1D16] to-[#081711] border border-[#D4AF37]/30 shadow-[inset_0_0_30px_rgba(0,0,0,0.6)] ${className}`} style={{ height }}>
       {/* 3D Canvas Mount */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Control Overlay */}
-      <div className="absolute bottom-3 right-3 flex items-center space-x-1 bg-white/90 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-sm text-slate-700">
+      <div className="absolute bottom-3 right-3 flex items-center space-x-1 bg-[#0B1D16]/90 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-[#D4AF37]/30 shadow-lg text-[#F4EFE6]">
         <button
           onClick={() => setIsRotating(!isRotating)}
           title={isRotating ? 'Pause rotation' : 'Auto rotate'}
-          className={`p-1.5 rounded-lg hover:bg-blue-50 transition-colors ${isRotating ? 'text-[#2563EB] bg-blue-50' : 'text-slate-500 hover:text-[#2563EB]'}`}
+          className={`p-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors ${isRotating ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-[#A3C1AD] hover:text-[#D4AF37]'}`}
         >
           <RotateCw className="w-4 h-4" />
         </button>
         <button
           onClick={() => handleZoom(0.85)}
           title="Zoom in"
-          className="p-1.5 rounded-lg hover:bg-blue-50 transition-colors text-slate-600 hover:text-[#2563EB]"
+          className="p-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors text-[#A3C1AD] hover:text-[#D4AF37]"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
         <button
           onClick={() => handleZoom(1.15)}
           title="Zoom out"
-          className="p-1.5 rounded-lg hover:bg-blue-50 transition-colors text-slate-600 hover:text-[#2563EB]"
+          className="p-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors text-[#A3C1AD] hover:text-[#D4AF37]"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
         <button
           onClick={handleReset}
           title="Reset viewpoint"
-          className="p-1.5 rounded-lg hover:bg-blue-50 transition-colors text-slate-600 hover:text-[#2563EB]"
+          className="p-1.5 rounded-lg hover:bg-[#D4AF37]/15 transition-colors text-[#A3C1AD] hover:text-[#D4AF37]"
         >
           <Maximize2 className="w-4 h-4" />
         </button>
       </div>
 
       {/* Plant Label Badge */}
-      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-slate-200 shadow-sm text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-        3D Interactive Model • {plantName}
+      <div className="absolute top-3 left-3 bg-[#0B1D16]/90 backdrop-blur-md px-3 py-1 rounded-full border border-[#D4AF37]/30 shadow-md text-xs font-semibold text-[#F4EFE6] flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+        <span className="luxury-gold-text">3D Botanical Model</span> • {plantName}
       </div>
     </div>
   );

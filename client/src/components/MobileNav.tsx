@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Sprout, Compass, FolderHeart, User, Camera, Download } from 'lucide-react';
+import { Home, Sprout, Compass, FolderHeart, User, Camera } from 'lucide-react';
 
 interface MobileNavProps {
   currentTab: string;
@@ -7,19 +7,19 @@ interface MobileNavProps {
   onOpenInstallModal?: () => void;
 }
 
-export const MobileNav: React.FC<MobileNavProps> = ({ currentTab, onNavigate, onOpenInstallModal }) => {
+export const MobileNav: React.FC<MobileNavProps> = ({ currentTab, onNavigate }) => {
   const items = [
     { id: 'landing', label: 'Home', icon: Home },
     { id: 'plants', label: 'Plants', icon: Sprout },
-    { id: 'planner', label: '3D Garden', icon: Compass },
-    { id: 'camera', label: 'Camera/AR', icon: Camera },
+    { id: 'planner', label: '3D Space', icon: Compass },
+    { id: 'camera', label: 'Camera AR', icon: Camera },
     { id: 'gardens', label: 'My Garden', icon: FolderHeart },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 z-40">
-      <div className="glass-nav rounded-2xl px-2 py-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.15)] border border-slate-200/90 bg-white/95 backdrop-blur-xl flex items-center justify-around">
+      <div className="rounded-2xl px-2 py-1.5 shadow-[0_16px_45px_rgba(0,0,0,0.8)] border border-[#D4AF37]/30 bg-[#0B1E17]/95 backdrop-blur-2xl flex items-center justify-around">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -42,16 +42,16 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentTab, onNavigate, on
               }}
               className={`min-h-[48px] min-w-[48px] flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
                 isActive
-                  ? 'text-[#2563EB] font-bold'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'text-[#F6D985] font-bold'
+                  : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
               }`}
             >
               <div
                 className={`p-1.5 rounded-xl transition ${
                   isCamera
-                    ? 'bg-[#22C55E]/15 text-[#16A34A] ring-1 ring-[#22C55E]/30 shadow-2xs'
+                    ? 'bg-[#E08A3C]/20 text-[#FFA56B] ring-1 ring-[#E08A3C]/40 shadow-sm'
                     : isActive
-                    ? 'bg-[#2563EB]/10 text-[#2563EB]'
+                    ? 'bg-[#D4AF37]/15 text-[#F6D985] ring-1 ring-[#D4AF37]/35 shadow-sm'
                     : ''
                 }`}
               >

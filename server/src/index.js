@@ -67,6 +67,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🌿 Virtual Herbal Garden Server running on port ${PORT}`);
-});
+export default app;
+
+const isDirectRun = process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('server/src/index.js');
+
+if (isDirectRun && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🌿 Virtual Herbal Garden Server running on port ${PORT}`);
+  });
+}

@@ -9,6 +9,8 @@ import { MobileNav } from './components/MobileNav';
 import { Footer } from './components/Footer';
 import { DisclaimerBanner } from './components/DisclaimerBanner';
 import { PWAInstallModal } from './components/PWAInstallModal';
+import { ViewInYourSpaceModal } from './components/ViewInYourSpaceModal';
+import { ViewInYourSpaceAR } from './components/ViewInYourSpaceAR';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -33,6 +35,8 @@ export function AppContent() {
   const [initialPlannerMode, setInitialPlannerMode] = useState<'3d' | 'top' | 'ar'>('3d');
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loadingPlants, setLoadingPlants] = useState(true);
+  const [viewInYourSpaceModalPlant, setViewInYourSpaceModalPlant] = useState<Plant | null>(null);
+  const [viewInYourSpaceARPlant, setViewInYourSpaceARPlant] = useState<Plant | null>(null);
   const [pwaInstallPrompt, setPwaInstallPrompt] = useState<any>(null);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isAppInstalled, setIsAppInstalled] = useState<boolean>(() => {
@@ -160,16 +164,31 @@ export function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenViewInYourSpaceModal = (plant: Plant) => {
+    setViewInYourSpaceModalPlant(plant);
+  };
+
+  const handleLaunchAR = (plant: Plant) => {
+    setViewInYourSpaceModalPlant(null);
+    setViewInYourSpaceARPlant(plant);
+  };
+
+  const handleCloseAR = () => {
+    setViewInYourSpaceARPlant(null);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8FAFC] selection:bg-[#2563EB]/20 selection:text-[#2563EB] font-sans pb-16 md:pb-0">
+    <div className="flex flex-col min-h-screen bg-transparent selection:bg-[#D4AF37]/35 selection:text-[#F6D985] font-sans pb-16 md:pb-0 text-[#F4EFE6]">
       {/* PWA Install Banner (Hidden once app is installed) */}
       {!isAppInstalled && pwaInstallPrompt && (
-        <div className="bg-[#0F172A] text-white px-4 py-2.5 text-xs flex items-center justify-between border-b border-slate-800">
-          <span className="truncate pr-2">🌿 Install AYUSH Garden for offline botanical care & full-screen 3D AR space planning!</span>
+        <div className="bg-[#0A1F16]/95 backdrop-blur-md text-[#F4EFE6] px-4 py-2.5 text-xs flex items-center justify-between border-b border-[#D4AF37]/25 shadow-lg">
+          <span className="truncate pr-2 text-[#E8E2D5] font-medium">
+            🌿 <strong className="text-[#F6D985]">Install AYUSH Sanctuary:</strong> Offline botanical wisdom, luxury 3D conservatory & full-screen AR space planning!
+          </span>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setIsInstallModalOpen(true)}
-              className="px-3.5 py-1.5 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold rounded-lg transition duration-200 shadow-sm"
+              className="px-3.5 py-1.5 luxury-btn-gold text-[#081711] font-bold rounded-xl transition duration-200 shadow-sm"
             >
               Install App
             </button>
@@ -201,6 +220,7 @@ export function AppContent() {
             featuredPlants={plants}
             onNavigate={handleNavigate}
             onViewPlantDetails={handleViewPlantDetails}
+            onViewInYourSpace={handleOpenViewInYourSpaceModal}
           />
         )}
 
@@ -225,6 +245,7 @@ export function AppContent() {
             plants={plants}
             onViewPlantDetails={handleViewPlantDetails}
             onAddToGarden={handleAddToGarden}
+            onViewInYourSpace={handleOpenViewInYourSpaceModal}
           />
         )}
 
@@ -237,6 +258,7 @@ export function AppContent() {
               setPlantToPlaceInGarden(selectedPlant);
               setCurrentTab('planner');
             }}
+            onViewInYourSpace={handleOpenViewInYourSpaceModal}
           />
         )}
 
@@ -250,6 +272,7 @@ export function AppContent() {
             initialGardenToLoad={gardenToLoad}
             onClearGardenToLoad={() => setGardenToLoad(null)}
             initialVisualizeMode={initialPlannerMode}
+            onOpenAmazonAR={handleLaunchAR}
           />
         )}
 
@@ -262,6 +285,7 @@ export function AppContent() {
             onNavigate={handleNavigate}
             onViewPlantDetails={handleViewPlantDetails}
             onAddToGarden={handleAddToGarden}
+            onViewInYourSpace={handleOpenViewInYourSpaceModal}
           />
         )}
 
@@ -298,6 +322,36 @@ export function AppContent() {
           } catch (_) {}
         }}
       />
+
+      {/* View in Your Space 3D Inspection & Guidance Modal */}
+      {viewInYourSpaceModalPlant && (
+        <ViewInYourSpaceModal
+          plant={viewInYourSpaceModalPlant}
+          isOpen={!!viewInYourSpaceModalPlant}
+          onClose={() => setViewInYourSpaceModalPlant(null)}
+          onLaunchAR={handleLaunchAR}
+          onAddToGarden={(p) => {
+            setViewInYourSpaceModalPlant(null);
+            handleAddToGarden(p);
+          }}
+        />
+      )}
+
+      {/* Fullscreen Amazon-Style View in Your Space AR Experience */}
+      {viewInYourSpaceARPlant && (
+        <ViewInYourSpaceAR
+          initialPlant={viewInYourSpaceARPlant}
+          catalogPlants={plants}
+          onClose={handleCloseAR}
+          onSaveToGardenSuccess={() => {
+            // Can optionally navigate to gardens or stay
+          }}
+          onSwitchTo3DPlanner={(p) => {
+            handleCloseAR();
+            handleAddToGarden(p);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -36,6 +36,7 @@ interface GardenPlannerWizardProps {
   initialGardenToLoad?: Garden | null;
   onClearGardenToLoad?: () => void;
   initialVisualizeMode?: '3d' | 'top' | 'ar';
+  onOpenAmazonAR?: (plant: Plant) => void;
 }
 
 export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
@@ -47,6 +48,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
   initialGardenToLoad,
   onClearGardenToLoad,
   initialVisualizeMode = '3d',
+  onOpenAmazonAR,
 }) => {
   const { user } = useAuth();
 
@@ -227,16 +229,16 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fadeIn text-[#0F172A]">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fadeIn text-[#F4EFE6]">
       
       {/* MULTI-STEP PROGRESS INDICATOR: 01 SPACE, 02 DIRECTION, 03 CONDITIONS, 04 PLANTS, 05 VISUALIZE */}
-      <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-[#E2E8F0] shadow-xs space-y-4">
+      <div className="luxury-card rounded-[2rem] p-5 sm:p-6 border border-[#D4AF37]/30 shadow-xl bg-[#0B1D16]/90 backdrop-blur-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
               HERBAL SPACE PLANNER
             </span>
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#0F172A] mt-0.5">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold luxury-gold-text mt-0.5">
               {stepsHeader[currentStep - 1]?.code} {stepsHeader[currentStep - 1]?.label}
             </h2>
           </div>
@@ -247,12 +249,12 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                 key={s.code}
                 type="button"
                 onClick={() => setCurrentStep(s.num)}
-                className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold whitespace-nowrap transition-all duration-200 ${
                   s.num === currentStep
-                    ? 'bg-[#2563EB] text-white shadow-xs'
+                    ? 'luxury-btn-gold text-[#081711] shadow-md'
                     : s.num < currentStep
-                    ? 'bg-[#2563EB]/10 text-[#2563EB]'
-                    : 'text-[#64748B] hover:text-[#0F172A]'
+                    ? 'bg-[#D4AF37]/15 text-[#F6D985] border border-[#D4AF37]/35'
+                    : 'text-[#A3C1AD] hover:text-[#F4EFE6] border border-transparent'
                 }`}
               >
                 {s.code} {s.label}
@@ -265,15 +267,15 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
       {/* STEP 1: 01 SPACE (Room Diagram, Length, Width, Calculated Area) */}
       {currentStep === 1 && (
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-4 border border-[#E2E8F0] shadow-xs max-w-md">
-            <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+          <div className="luxury-card rounded-2xl p-4 border border-[#D4AF37]/25 bg-[#0E281E]/80 shadow-md max-w-md">
+            <label className="text-[10px] font-bold text-[#A3C1AD] uppercase tracking-wider block">
               Garden Space Title
             </label>
             <input
               type="text"
               value={gardenName}
               onChange={(e) => setGardenName(e.target.value)}
-              className="w-full text-lg font-serif font-bold text-[#0F172A] bg-transparent focus:outline-none"
+              className="w-full text-lg font-serif font-bold text-[#F4EFE6] bg-transparent focus:outline-none placeholder-[#A3C1AD]/50"
             />
           </div>
 
@@ -289,7 +291,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="py-3.5 px-8 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center gap-2"
+              className="py-3.5 px-8 rounded-full luxury-btn-copper text-white text-xs font-bold tracking-wider transition duration-200 shadow-md flex items-center gap-2"
             >
               <span>02 DIRECTION →</span>
             </button>
@@ -310,7 +312,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="py-3 px-6 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition duration-200"
+              className="py-3 px-6 rounded-full luxury-btn-secondary text-xs font-semibold text-[#A3C1AD] hover:text-[#F4EFE6] transition duration-200"
             >
               ← 01 SPACE
             </button>
@@ -318,7 +320,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             <button
               type="button"
               onClick={() => setCurrentStep(3)}
-              className="py-3.5 px-8 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center gap-2"
+              className="py-3.5 px-8 rounded-full luxury-btn-copper text-white text-xs font-bold tracking-wider transition duration-200 shadow-md flex items-center gap-2"
             >
               <span>03 CONDITIONS →</span>
             </button>
@@ -328,15 +330,15 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
 
       {/* STEP 3: 03 CONDITIONS (Environment Analysis with Large Selectable Glass Cards) */}
       {currentStep === 3 && (
-        <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-[#E2E8F0] shadow-xs space-y-10">
-          <div className="border-b border-[#E2E8F0] pb-6">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+        <div className="luxury-card rounded-[2.5rem] p-6 sm:p-10 border border-[#D4AF37]/30 shadow-xl space-y-10 bg-[#0B1D16]/90 backdrop-blur-xl">
+          <div className="border-b border-[#D4AF37]/25 pb-6">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
               ENVIRONMENTAL ANALYSIS
             </span>
-            <h3 className="text-2xl font-serif font-bold text-[#0F172A] mt-0.5">
+            <h3 className="text-2xl font-serif font-bold luxury-gold-text mt-0.5">
               Growing Conditions Questionnaire
             </h3>
-            <p className="text-xs text-[#64748B] mt-1">
+            <p className="text-xs text-[#A3C1AD] mt-1">
               Select the natural illumination, spatial scale, and maintenance style of your room.
             </p>
           </div>
@@ -344,8 +346,8 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
           <div className="space-y-8">
             {/* Question 1: How much sunlight does the space receive? (Low, Medium, High) */}
             <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
-                <Sun className="w-4 h-4 text-[#F97316]" />
+              <label className="text-xs font-bold uppercase tracking-wider text-[#F4EFE6] flex items-center gap-2">
+                <Sun className="w-4 h-4 text-[#D4AF37]" />
                 How much sunlight does the space receive?
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -354,14 +356,14 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                     key={lvl}
                     type="button"
                     onClick={() => setSunlight(lvl)}
-                    className={`p-5 rounded-2xl border text-left transition ${
+                    className={`p-5 rounded-2xl border text-left transition duration-200 ${
                       sunlight === lvl
-                        ? 'border-[#2563EB] bg-[#2563EB]/5 text-[#0F172A] shadow-xs ring-2 ring-[#2563EB]'
-                        : 'border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#F6D985] shadow-lg ring-2 ring-[#D4AF37]/50'
+                        : 'border-[#D4AF37]/20 bg-[#0E281E]/70 text-[#A3C1AD] hover:bg-[#133528]/80 hover:border-[#D4AF37]/40'
                     }`}
                   >
-                    <span className="text-base font-serif font-bold block">{lvl} Sunlight</span>
-                    <span className="text-xs text-[#64748B] mt-1 block">
+                    <span className="text-base font-serif font-bold block text-[#F4EFE6]">{lvl} Sunlight</span>
+                    <span className="text-xs text-[#A3C1AD] mt-1 block">
                       {lvl === 'High' ? '5+ hrs direct morning sun' : lvl === 'Medium' ? 'Filtered dappled light' : 'Gentle indirect shade'}
                     </span>
                   </button>
@@ -371,8 +373,8 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
 
             {/* Question 2: How much space is available? (Small, Medium, Large) */}
             <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-[#2563EB]" />
+              <label className="text-xs font-bold uppercase tracking-wider text-[#F4EFE6] flex items-center gap-2">
+                <Ruler className="w-4 h-4 text-[#D4AF37]" />
                 How much space is available?
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -381,14 +383,14 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                     key={sp}
                     type="button"
                     onClick={() => setSpaceVolume(sp)}
-                    className={`p-5 rounded-2xl border text-left transition ${
+                    className={`p-5 rounded-2xl border text-left transition duration-200 ${
                       spaceVolume === sp
-                        ? 'border-[#2563EB] bg-[#2563EB]/5 text-[#0F172A] shadow-xs ring-2 ring-[#2563EB]'
-                        : 'border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#F6D985] shadow-lg ring-2 ring-[#D4AF37]/50'
+                        : 'border-[#D4AF37]/20 bg-[#0E281E]/70 text-[#A3C1AD] hover:bg-[#133528]/80 hover:border-[#D4AF37]/40'
                     }`}
                   >
-                    <span className="text-base font-serif font-bold block">{sp} Space</span>
-                    <span className="text-xs text-[#64748B] mt-1 block">
+                    <span className="text-base font-serif font-bold block text-[#F4EFE6]">{sp} Space</span>
+                    <span className="text-xs text-[#A3C1AD] mt-1 block">
                       {sp === 'Small' ? 'Windowsill / Compact corner' : sp === 'Medium' ? 'Balcony / Veranda' : 'Expansive patio / Terrace'}
                     </span>
                   </button>
@@ -398,8 +400,8 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
 
             {/* Question 3: Where is the space? (Indoor, Balcony, Terrace, Outdoor) */}
             <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
-                <Home className="w-4 h-4 text-[#2563EB]" />
+              <label className="text-xs font-bold uppercase tracking-wider text-[#F4EFE6] flex items-center gap-2">
+                <Home className="w-4 h-4 text-[#D4AF37]" />
                 Where is the space?
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -408,14 +410,14 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                     key={loc}
                     type="button"
                     onClick={() => setLocationType(loc)}
-                    className={`p-5 rounded-2xl border text-left transition ${
+                    className={`p-5 rounded-2xl border text-left transition duration-200 ${
                       locationType === loc
-                        ? 'border-[#2563EB] bg-[#2563EB]/5 text-[#0F172A] shadow-xs ring-2 ring-[#2563EB]'
-                        : 'border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#F6D985] shadow-lg ring-2 ring-[#D4AF37]/50'
+                        : 'border-[#D4AF37]/20 bg-[#0E281E]/70 text-[#A3C1AD] hover:bg-[#133528]/80 hover:border-[#D4AF37]/40'
                     }`}
                   >
-                    <span className="text-base font-serif font-bold block">{loc}</span>
-                    <span className="text-[11px] text-[#64748B] mt-1 block">Location</span>
+                    <span className="text-base font-serif font-bold block text-[#F4EFE6]">{loc}</span>
+                    <span className="text-[11px] text-[#A3C1AD] mt-1 block">Location</span>
                   </button>
                 ))}
               </div>
@@ -423,8 +425,8 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
 
             {/* Question 4: How much maintenance do you prefer? (Low, Medium, High) */}
             <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#F97316]" />
+              <label className="text-xs font-bold uppercase tracking-wider text-[#F4EFE6] flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#E07A5F]" />
                 How much maintenance do you prefer?
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -433,14 +435,14 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                     key={m}
                     type="button"
                     onClick={() => setMaintenance(m)}
-                    className={`p-5 rounded-2xl border text-left transition ${
+                    className={`p-5 rounded-2xl border text-left transition duration-200 ${
                       maintenance === m
-                        ? 'border-[#2563EB] bg-[#2563EB]/5 text-[#0F172A] shadow-xs ring-2 ring-[#2563EB]'
-                        : 'border-[#E2E8F0] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#F6D985] shadow-lg ring-2 ring-[#D4AF37]/50'
+                        : 'border-[#D4AF37]/20 bg-[#0E281E]/70 text-[#A3C1AD] hover:bg-[#133528]/80 hover:border-[#D4AF37]/40'
                     }`}
                   >
-                    <span className="text-base font-serif font-bold block">{m} Maintenance</span>
-                    <span className="text-xs text-[#64748B] mt-1 block">
+                    <span className="text-base font-serif font-bold block text-[#F4EFE6]">{m} Maintenance</span>
+                    <span className="text-xs text-[#A3C1AD] mt-1 block">
                       {m === 'Low' ? 'Hardy & forgiving flora' : m === 'Medium' ? 'Balanced routine' : 'Attentive care'}
                     </span>
                   </button>
@@ -449,11 +451,11 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-4 border-t border-[#E2E8F0]">
+          <div className="flex justify-between items-center pt-4 border-t border-[#D4AF37]/25">
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="py-3 px-6 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition duration-200"
+              className="py-3 px-6 rounded-full luxury-btn-secondary text-xs font-semibold text-[#A3C1AD] hover:text-[#F4EFE6] transition duration-200"
             >
               ← 02 DIRECTION
             </button>
@@ -461,7 +463,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             <button
               type="button"
               onClick={() => setCurrentStep(4)}
-              className="py-3.5 px-8 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center gap-2"
+              className="py-3.5 px-8 rounded-full luxury-btn-copper text-white text-xs font-bold tracking-wider transition duration-200 shadow-md flex items-center gap-2"
             >
               <span>04 PLANTS →</span>
             </button>
@@ -482,14 +484,16 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             spaceSqFt={areaSqFt}
             onSelectPlantForGarden={handleSelectPlantForLayout}
             onViewPlantDetails={onViewPlantDetails}
+            onViewInYourSpace={onOpenAmazonAR}
             onAutoArrangePlants={handleAutoArrangeRecommended}
+            onDirectionChange={setSelectedDirection}
           />
 
           <div className="flex justify-between items-center pt-2">
             <button
               type="button"
               onClick={() => setCurrentStep(3)}
-              className="py-3 px-6 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition duration-200"
+              className="py-3 px-6 rounded-full luxury-btn-secondary text-xs font-semibold text-[#A3C1AD] hover:text-[#F4EFE6] transition duration-200"
             >
               ← 03 CONDITIONS
             </button>
@@ -498,13 +502,12 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
               type="button"
               onClick={() => {
                 if (placedPlants.length === 0 && catalogPlants.length > 0) {
-                  // Seed Tulsi & Aloe
                   handleSelectPlantForLayout(catalogPlants[0]);
                 } else {
                   setCurrentStep(5);
                 }
               }}
-              className="py-3.5 px-8 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center gap-2"
+              className="py-3.5 px-8 rounded-full luxury-btn-copper text-white text-xs font-bold tracking-wider transition duration-200 shadow-md flex items-center gap-2"
             >
               <span>05 VISUALIZE →</span>
             </button>
@@ -516,25 +519,25 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
       {currentStep === 5 && (
         <div className="space-y-6">
           {/* View Mode Switcher: 3D View, Top View, AR View */}
-          <div className="bg-white rounded-[2rem] p-4 border border-[#E2E8F0] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="luxury-card rounded-[2rem] p-4 border border-[#D4AF37]/30 shadow-xl bg-[#0B1D16]/90 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+              <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
                 SPATIAL EDITOR
               </span>
-              <h3 className="text-xl font-serif font-bold text-[#0F172A] mt-0.5">
+              <h3 className="text-xl font-serif font-bold luxury-gold-text mt-0.5">
                 Virtual Garden & AR Staging
               </h3>
             </div>
 
             {/* Switching between: 3D View, Top View, AR View */}
-            <div className="flex bg-[#F1F5F9] p-1 rounded-full border border-[#E2E8F0] text-xs font-bold">
+            <div className="flex bg-[#081711] p-1.5 rounded-full border border-[#D4AF37]/30 text-xs font-bold shadow-inner">
               <button
                 type="button"
                 onClick={() => setVisualizeMode('3d')}
                 className={`py-2 px-5 rounded-full transition duration-200 ${
                   visualizeMode === '3d'
-                    ? 'bg-[#2563EB] text-white shadow-xs'
-                    : 'text-[#64748B] hover:text-[#0F172A]'
+                    ? 'luxury-btn-gold text-[#081711] shadow-md'
+                    : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
                 }`}
               >
                 3D View
@@ -544,8 +547,8 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                 onClick={() => setVisualizeMode('top')}
                 className={`py-2 px-5 rounded-full transition duration-200 ${
                   visualizeMode === 'top'
-                    ? 'bg-[#2563EB] text-white shadow-xs'
-                    : 'text-[#64748B] hover:text-[#0F172A]'
+                    ? 'luxury-btn-gold text-[#081711] shadow-md'
+                    : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
                 }`}
               >
                 Top View
@@ -555,11 +558,11 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                 onClick={() => setVisualizeMode('ar')}
                 className={`py-2 px-5 rounded-full transition duration-200 flex items-center gap-1.5 ${
                   visualizeMode === 'ar'
-                    ? 'bg-[#2563EB] text-white shadow-xs'
-                    : 'text-[#64748B] hover:text-[#0F172A]'
+                    ? 'luxury-btn-gold text-[#081711] shadow-md'
+                    : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
                 }`}
               >
-                <Camera className={`w-3.5 h-3.5 ${visualizeMode === 'ar' ? 'text-white' : 'text-[#64748B]'}`} />
+                <Camera className={`w-3.5 h-3.5 ${visualizeMode === 'ar' ? 'text-[#081711]' : 'text-[#D4AF37]'}`} />
                 AR View
               </button>
             </div>
@@ -575,6 +578,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
               onBackToWizard={() => setCurrentStep(4)}
               onSaveGarden={handleSaveGarden}
               onFallbackTo3D={() => setVisualizeMode('3d')}
+              onOpenAmazonAR={onOpenAmazonAR}
             />
           )}
 
@@ -602,15 +606,15 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
                 onOpenMeasurer={() => setCurrentStep(1)}
                 onViewInMySpace={() => setVisualizeMode('ar')}
               />
-              <p className="text-xs text-[#64748B] text-center">
-                Interactive 3D Garden Visualization powered by Three.js WebGL. Drag plants within the boundary, verify spacing indicators, optimize layout, or switch to <strong>Top View</strong> or <strong>AR View</strong>.
+              <p className="text-xs text-[#A3C1AD] text-center">
+                Interactive 3D Garden Visualization powered by Three.js WebGL. Drag plants within the boundary, verify spacing indicators, optimize layout, or switch to <strong className="text-[#F6D985]">Top View</strong> or <strong className="text-[#F6D985]">AR View</strong>.
               </p>
             </div>
           )}
 
           {/* Save Status & Confirmation */}
           {saveSuccess && (
-            <div className="p-4 rounded-2xl bg-[#22C55E]/10 border border-[#22C55E]/30 text-xs text-[#0F172A] flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-[#0E281E] border border-[#22C55E]/40 text-xs text-[#F4EFE6] flex items-center justify-between shadow-lg">
               <span className="font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
                 Garden design saved successfully to your collection!
@@ -618,7 +622,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('gardens')}
-                className="px-4 py-1.5 rounded-full bg-[#22C55E] hover:bg-[#16a34a] text-white font-bold transition duration-200 shadow-xs"
+                className="px-4 py-1.5 rounded-full luxury-btn-gold text-[#081711] font-bold transition duration-200 shadow-xs"
               >
                 View in My Garden →
               </button>
@@ -626,7 +630,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
           )}
 
           {saveError && (
-            <div className="p-4 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/30 text-xs text-[#EF4444] flex items-center gap-2">
+            <div className="p-4 rounded-2xl bg-[#3B1212] border border-[#EF4444]/40 text-xs text-[#FCA5A5] flex items-center gap-2 shadow-lg">
               <AlertCircle className="w-4 h-4 text-[#EF4444] shrink-0" />
               <span>{saveError}</span>
             </div>
@@ -637,7 +641,7 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
             <button
               type="button"
               onClick={() => setCurrentStep(4)}
-              className="py-3 px-6 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition duration-200"
+              className="py-3 px-6 rounded-full luxury-btn-secondary text-xs font-semibold text-[#A3C1AD] hover:text-[#F4EFE6] transition duration-200"
             >
               ← 04 PLANTS
             </button>
@@ -646,9 +650,9 @@ export const GardenPlannerWizard: React.FC<GardenPlannerWizardProps> = ({
               type="button"
               disabled={isSaving}
               onClick={handleSaveGarden}
-              className="py-3.5 px-8 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center gap-2 disabled:opacity-50"
+              className="py-3.5 px-8 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold tracking-wider transition duration-200 shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 disabled:opacity-50"
             >
-              <Save className="w-4 h-4 text-white" />
+              <Save className="w-4 h-4 text-[#081711]" />
               <span>{isSaving ? 'Saving...' : editingGardenId ? 'UPDATE GARDEN' : 'SAVE GARDEN'}</span>
             </button>
           </div>

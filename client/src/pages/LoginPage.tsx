@@ -42,47 +42,49 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 text-[#0F172A]">
-      <div className="max-w-md w-full bg-white rounded-[2.5rem] border border-[#E2E8F0] shadow-sm p-8 sm:p-10 space-y-6">
+    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 text-[#F4EFE6]">
+      <div className="max-w-md w-full luxury-card bg-[#0B1D16]/90 backdrop-blur-xl rounded-[2.5rem] border border-[#D4AF37]/30 shadow-[0_25px_60px_rgba(0,0,0,0.6)] p-8 sm:p-10 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <span className="text-3xl block">🌿</span>
-          <h2 className="text-3xl font-serif font-bold text-[#0F172A]">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-[#D4AF37]/20 to-[#0E281E] border border-[#D4AF37]/40 flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+            <span className="text-2xl">🌿</span>
+          </div>
+          <h2 className="text-3xl font-serif font-bold luxury-gold-text tracking-wide">
             Botanical Portal
           </h2>
-          <p className="text-xs text-[#64748B]">
-            Sign in to access your saved herbal garden layouts.
+          <p className="text-xs text-[#A3C1AD]">
+            Sign in to access your saved herbal garden sanctuaries.
           </p>
         </div>
 
         {/* Demo Fast Access Card */}
-        <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-3">
+        <div className="p-4 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 flex items-center justify-between gap-3">
           <div>
-            <span className="text-xs font-bold text-[#0F172A] block flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" /> One-Click Demo Access
+            <span className="text-xs font-bold text-[#F4EFE6] block flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" /> One-Click Demo Access
             </span>
-            <span className="text-[11px] text-[#64748B]">Immediate evaluation mode</span>
+            <span className="text-[11px] text-[#A3C1AD]/80">Immediate evaluation mode</span>
           </div>
           <button
             type="button"
             onClick={handleDemoSignIn}
             disabled={loading}
-            className="py-1.5 px-3.5 rounded-full bg-[#2563EB] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-xs font-bold transition duration-200 shadow-xs disabled:opacity-50"
+            className="py-1.5 px-4 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold transition duration-200 shadow-sm disabled:opacity-50"
           >
             Demo Login
           </button>
         </div>
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/30 text-xs text-[#EF4444] flex items-center gap-2">
+          <div className="p-3.5 rounded-xl bg-[#EF4444]/15 border border-[#EF4444]/30 text-xs text-[#fca5a5] flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-[#EF4444] shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block">
               Email Address
             </label>
             <input
@@ -90,20 +92,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="w-full px-4 py-3 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
+              placeholder="curator@sanctuary.com"
+              className="w-full px-4 py-3 rounded-xl border border-[#D4AF37]/30 bg-[#0E281E]/80 text-sm text-[#F4EFE6] placeholder:text-[#A3C1AD]/40 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+              <label className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block">
                 Password
               </label>
               <button
                 type="button"
                 onClick={() => onNavigate('forgot-password')}
-                className="text-xs text-[#2563EB] hover:underline"
+                className="text-xs text-[#D4AF37] hover:text-[#F6D985] transition-colors"
               >
                 Forgot password?
               </button>
@@ -114,17 +116,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
+              className="w-full px-4 py-3 rounded-xl border border-[#D4AF37]/30 bg-[#0E281E]/80 text-sm text-[#F4EFE6] placeholder:text-[#A3C1AD]/40 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
             />
           </div>
 
           <div className="pt-1">
-            <label className="flex items-center gap-2 text-xs text-[#64748B] cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-[#A3C1AD] cursor-pointer">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded border-[#E2E8F0] text-[#2563EB] focus:ring-[#2563EB]"
+                className="rounded border-[#D4AF37]/40 bg-[#0E281E] text-[#D4AF37] accent-[#D4AF37] focus:ring-[#D4AF37]"
               />
               Remember my session
             </label>
@@ -133,19 +135,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-6 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white font-bold text-xs tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3.5 px-6 rounded-full luxury-btn-gold text-[#081711] font-bold text-xs tracking-wider transition duration-200 shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
-            <ArrowRight className="w-4 h-4 text-white" />
+            {loading ? 'Authenticating...' : 'Sign In to Sanctuary'}
+            <ArrowRight className="w-4 h-4 text-[#081711]" />
           </button>
         </form>
 
-        <div className="text-center pt-2 text-xs text-[#64748B]">
+        <div className="text-center pt-2 text-xs text-[#A3C1AD]">
           New to the garden?{' '}
           <button
             type="button"
             onClick={() => onNavigate('signup')}
-            className="text-[#2563EB] font-bold hover:underline"
+            className="text-[#D4AF37] font-bold hover:text-[#F6D985] transition-colors underline"
           >
             Create an account
           </button>

@@ -1213,9 +1213,60 @@
       "category": "Herbal Garden & Vastu Knowledge",
       "answers": [],
       "completedAt": "2026-10-09T05:05:26.619Z"
+    },
+    {
+      "_id": "qres_1791538547999_lyvtz0",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 9,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-09T09:35:47.999Z"
     }
   ],
   "userActivities": [
+    {
+      "_id": "act_1791538548030",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "DELETE_GARDEN",
+      "details": "Removed a garden layout",
+      "timestamp": "2026-10-09T09:35:48.030Z"
+    },
+    {
+      "_id": "act_1791538548000",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 9/10 (90%)",
+      "timestamp": "2026-10-09T09:35:48.000Z"
+    },
+    {
+      "_id": "act_1791538547968",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "UPDATE_GARDEN",
+      "details": "Updated layout \"Updated Automated Test Sanctuary\"",
+      "timestamp": "2026-10-09T09:35:47.968Z"
+    },
+    {
+      "_id": "act_1791538547937",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Automated Test Sanctuary\" with 1 plants",
+      "timestamp": "2026-10-09T09:35:47.937Z"
+    },
+    {
+      "_id": "act_1791538547906",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "SAVE_PLANT",
+      "details": "Saved Tulsi (Holy Basil) to personal collection",
+      "timestamp": "2026-10-09T09:35:47.906Z"
+    },
+    {
+      "_id": "act_1791538547880",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-09T09:35:47.880Z"
+    },
     {
       "_id": "act_1791522326624",
       "userId": "user_1791383395743_sjbapm",

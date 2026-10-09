@@ -102,27 +102,27 @@ export const LearningQuizPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fadeIn text-[#0F172A]">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fadeIn text-[#F4EFE6]">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#D4AF37]/20 pb-6">
         <div>
-          <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
             KNOWLEDGE & ACADEMY
           </span>
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#0F172A] mt-0.5">
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold luxury-gold-text mt-0.5">
             Botanical Learning & Quiz
           </h1>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-[#F1F5F9] p-1 rounded-full border border-[#E2E8F0] text-xs font-bold self-start sm:self-auto">
+        <div className="flex bg-[#0B1D16] p-1 rounded-full border border-[#D4AF37]/30 text-xs font-bold self-start sm:self-auto shadow-sm">
           <button
             type="button"
             onClick={() => setActiveTab('learn')}
             className={`py-2 px-5 rounded-full transition duration-200 flex items-center gap-1.5 ${
               activeTab === 'learn'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'text-[#64748B] hover:text-[#0F172A]'
+                ? 'luxury-btn-gold text-[#081711] shadow-xs'
+                : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -133,8 +133,8 @@ export const LearningQuizPage: React.FC = () => {
             onClick={() => setActiveTab('quiz')}
             className={`py-2 px-5 rounded-full transition duration-200 flex items-center gap-1.5 ${
               activeTab === 'quiz'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'text-[#64748B] hover:text-[#0F172A]'
+                ? 'luxury-btn-gold text-[#081711] shadow-xs'
+                : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
             }`}
           >
             <Award className="w-3.5 h-3.5" />
@@ -155,8 +155,8 @@ export const LearningQuizPage: React.FC = () => {
                 onClick={() => setLearnSection(sec.id as any)}
                 className={`py-2.5 px-5 rounded-full text-xs font-semibold tracking-wide transition duration-200 ${
                   learnSection === sec.id
-                    ? 'bg-[#2563EB] text-white shadow-xs'
-                    : 'bg-white text-[#64748B] hover:text-[#2563EB] hover:bg-[#F8FAFC] border border-[#E2E8F0]'
+                    ? 'luxury-btn-gold text-[#081711] shadow-xs'
+                    : 'bg-[#0E281E]/80 text-[#A3C1AD] hover:text-[#F4EFE6] hover:bg-[#0E281E] border border-[#D4AF37]/25'
                 }`}
               >
                 {sec.label}
@@ -165,35 +165,35 @@ export const LearningQuizPage: React.FC = () => {
           </div>
 
           {/* Large Editorial Card with Illustrations */}
-          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 border border-[#E2E8F0] space-y-8 shadow-sm">
+          <div className="luxury-card bg-[#0B1D16]/90 rounded-[2.5rem] p-8 sm:p-12 border border-[#D4AF37]/30 space-y-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             {learnSection === 'systems' && (
               <div className="space-y-6">
-                <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
+                <span className="bg-[#0E281E] text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
                   MEDICAL TRADITIONS
                 </span>
-                <h2 className="text-3xl font-serif font-bold text-[#0F172A]">
+                <h2 className="text-3xl font-serif font-bold text-[#F4EFE6]">
                   AYUSH Systems of Classical Healing
                 </h2>
-                <p className="text-sm text-[#64748B] leading-relaxed max-w-2xl">
+                <p className="text-sm text-[#A3C1AD] leading-relaxed max-w-2xl">
                   AYUSH encompasses India's indigenous medical systems: Ayurveda, Yoga & Naturopathy, Unani, Siddha, and Homeopathy. These philosophies prioritize preventive wellness through botanical harmony.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 text-xs">
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
-                    <strong className="text-base font-serif text-[#0F172A] block">Ayurveda (Longevity Science)</strong>
-                    <p className="text-[#64748B]">Focuses on tridoshic equilibrium (Vata, Pitta, Kapha) and rejuvenating Rasayana botanicals like Ashwagandha and Tulsi.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-1">
+                    <strong className="text-base font-serif text-[#D4AF37] block">Ayurveda (Longevity Science)</strong>
+                    <p className="text-[#A3C1AD]">Focuses on tridoshic equilibrium (Vata, Pitta, Kapha) and rejuvenating Rasayana botanicals like Ashwagandha and Tulsi.</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
-                    <strong className="text-base font-serif text-[#0F172A] block">Siddha (Dravidian Alchemy)</strong>
-                    <p className="text-[#64748B]">Rooted in southern Indian tradition, employing Kaya Kalpa therapies and herbs like Bhringraj to maintain cellular vitality.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-1">
+                    <strong className="text-base font-serif text-[#D4AF37] block">Siddha (Dravidian Alchemy)</strong>
+                    <p className="text-[#A3C1AD]">Rooted in southern Indian tradition, employing Kaya Kalpa therapies and herbs like Bhringraj to maintain cellular vitality.</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
-                    <strong className="text-base font-serif text-[#0F172A] block">Unani (Tibbi Medicine)</strong>
-                    <p className="text-[#64748B]">Derived from Greco-Arabic principles balancing bodily humors through warming circulatory botanicals like Lemongrass.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-1">
+                    <strong className="text-base font-serif text-[#D4AF37] block">Unani (Tibbi Medicine)</strong>
+                    <p className="text-[#A3C1AD]">Derived from Greco-Arabic principles balancing bodily humors through warming circulatory botanicals like Lemongrass.</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
-                    <strong className="text-base font-serif text-[#0F172A] block">Yoga & Naturopathy</strong>
-                    <p className="text-[#64748B]">Harnesses the five elements (Pancha Mahabhutas) alongside living oxygen-producing plants like Aloe Vera.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-1">
+                    <strong className="text-base font-serif text-[#D4AF37] block">Yoga & Naturopathy</strong>
+                    <p className="text-[#A3C1AD]">Harnesses the five elements (Pancha Mahabhutas) alongside living oxygen-producing plants like Aloe Vera.</p>
                   </div>
                 </div>
               </div>
@@ -201,24 +201,24 @@ export const LearningQuizPage: React.FC = () => {
 
             {learnSection === 'identification' && (
               <div className="space-y-6">
-                <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
+                <span className="bg-[#0E281E] text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
                   MORPHOLOGICAL CLUES
                 </span>
-                <h2 className="text-3xl font-serif font-bold text-[#0F172A]">
+                <h2 className="text-3xl font-serif font-bold text-[#F4EFE6]">
                   Plant Identification & Characteristics
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
-                    <strong className="text-sm font-serif text-[#0F172A] block">Square Stems (Lamiaceae)</strong>
-                    <p className="text-[#64748B]">Tulsi and Mint are characterized by distinct four-sided square stems and opposite aromatic leaf pairs.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-2">
+                    <strong className="text-sm font-serif text-[#D4AF37] block">Square Stems (Lamiaceae)</strong>
+                    <p className="text-[#A3C1AD]">Tulsi and Mint are characterized by distinct four-sided square stems and opposite aromatic leaf pairs.</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
-                    <strong className="text-sm font-serif text-[#0F172A] block">Succulent Rosettes</strong>
-                    <p className="text-[#64748B]">Aloe Vera displays thick lanceolate leaves with serrated margins filled with clear soothing inner mucilage.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-2">
+                    <strong className="text-sm font-serif text-[#D4AF37] block">Succulent Rosettes</strong>
+                    <p className="text-[#A3C1AD]">Aloe Vera displays thick lanceolate leaves with serrated margins filled with clear soothing inner mucilage.</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
-                    <strong className="text-sm font-serif text-[#0F172A] block">Heart-Shaped Climbers</strong>
-                    <p className="text-[#64748B]">Giloy (Tinospora cordifolia) features delicate cordate leaves along grooved twining aerial stems.</p>
+                  <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 space-y-2">
+                    <strong className="text-sm font-serif text-[#D4AF37] block">Heart-Shaped Climbers</strong>
+                    <p className="text-[#A3C1AD]">Giloy (Tinospora cordifolia) features delicate cordate leaves along grooved twining aerial stems.</p>
                   </div>
                 </div>
               </div>
@@ -226,27 +226,27 @@ export const LearningQuizPage: React.FC = () => {
 
             {learnSection === 'uses' && (
               <div className="space-y-6">
-                <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
+                <span className="bg-[#0E281E] text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
                   TRADITIONAL APOTHECARY
                 </span>
-                <h2 className="text-3xl font-serif font-bold text-[#0F172A]">
+                <h2 className="text-3xl font-serif font-bold text-[#F4EFE6]">
                   Traditional Preparation Arts
                 </h2>
-                <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#A3C1AD] leading-relaxed">
                   Classical AYUSH methods for releasing botanical therapeutic essences:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <strong className="text-sm font-serif text-[#0F172A] block">Kwath / Kashaya</strong>
-                    <p className="text-[#64748B] mt-1">Boiled decoctions from woody bark, rhizomes, or tough roots reduced to concentrated tea.</p>
+                  <div className="p-4 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20">
+                    <strong className="text-sm font-serif text-[#D4AF37] block">Kwath / Kashaya</strong>
+                    <p className="text-[#A3C1AD] mt-1">Boiled decoctions from woody bark, rhizomes, or tough roots reduced to concentrated tea.</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <strong className="text-sm font-serif text-[#0F172A] block">Swarasa</strong>
-                    <p className="text-[#64748B] mt-1">Freshly pressed raw juice from leaves, strained through clean muslin cloth.</p>
+                  <div className="p-4 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20">
+                    <strong className="text-sm font-serif text-[#D4AF37] block">Swarasa</strong>
+                    <p className="text-[#A3C1AD] mt-1">Freshly pressed raw juice from leaves, strained through clean muslin cloth.</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <strong className="text-sm font-serif text-[#0F172A] block">Hima (Cold Infusion)</strong>
-                    <p className="text-[#64748B] mt-1">Aromatic delicate flowers steeped overnight in fresh water for cooling Pitta relief.</p>
+                  <div className="p-4 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20">
+                    <strong className="text-sm font-serif text-[#D4AF37] block">Hima (Cold Infusion)</strong>
+                    <p className="text-[#A3C1AD] mt-1">Aromatic delicate flowers steeped overnight in fresh water for cooling Pitta relief.</p>
                   </div>
                 </div>
               </div>
@@ -254,35 +254,35 @@ export const LearningQuizPage: React.FC = () => {
 
             {learnSection === 'care' && (
               <div className="space-y-6">
-                <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
+                <span className="bg-[#0E281E] text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
                   CULTIVATION ETHICS
                 </span>
-                <h2 className="text-3xl font-serif font-bold text-[#0F172A]">
+                <h2 className="text-3xl font-serif font-bold text-[#F4EFE6]">
                   Plant Care & Gardening Discipline
                 </h2>
-                <div className="space-y-2.5 text-xs text-[#64748B]">
-                  <p>• <strong>Morning Sunlight:</strong> Place plants where they receive morning photon rays to produce aromatic terpenes.</p>
-                  <p>• <strong>Drainage Discipline:</strong> Ensure container pots have free-draining gravel or perlite bases.</p>
-                  <p>• <strong>Gentle Pruning:</strong> Deadhead spent blossoms to encourage fresh foliage shoots.</p>
+                <div className="space-y-2.5 text-xs text-[#A3C1AD]">
+                  <p>• <strong className="text-[#F4EFE6]">Morning Sunlight:</strong> Place plants where they receive morning photon rays to produce aromatic terpenes.</p>
+                  <p>• <strong className="text-[#F4EFE6]">Drainage Discipline:</strong> Ensure container pots have free-draining gravel or perlite bases.</p>
+                  <p>• <strong className="text-[#F4EFE6]">Gentle Pruning:</strong> Deadhead spent blossoms to encourage fresh foliage shoots.</p>
                 </div>
               </div>
             )}
 
             {learnSection === 'vastu' && (
               <div className="space-y-6">
-                <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
+                <span className="bg-[#0E281E] text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-bold tracking-[0.2em] px-3.5 py-1 rounded-full uppercase">
                   SPATIAL HARMONY
                 </span>
-                <h2 className="text-3xl font-serif font-bold text-[#0F172A]">
+                <h2 className="text-3xl font-serif font-bold text-[#F4EFE6]">
                   Vastu Concepts & Spatial Aesthetics
                 </h2>
-                <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#A3C1AD] leading-relaxed">
                   How traditional Indian architectural geometry arranges home flora according to sunlight and ventilation flows:
                 </p>
-                <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs space-y-2 text-[#0F172A]">
-                  <p>• <strong>North-East (Ishanya):</strong> Associated with water and clarity. Ideal for light sacred herbs like Tulsi and Brahmi.</p>
-                  <p>• <strong>East (Surya):</strong> Receives invigorating sunrise. Harmonizes rejuvenating health tonics like Amla.</p>
-                  <p>• <strong>South-East (Agni):</strong> Connected to the fire element. Suits warming spices like Ginger and Cinnamon.</p>
+                <div className="p-5 rounded-2xl bg-[#0E281E]/70 border border-[#D4AF37]/20 text-xs space-y-2 text-[#F4EFE6]">
+                  <p>• <strong className="text-[#D4AF37]">North-East (Ishanya):</strong> Associated with water and clarity. Ideal for light sacred herbs like Tulsi and Brahmi.</p>
+                  <p>• <strong className="text-[#D4AF37]">East (Surya):</strong> Receives invigorating sunrise. Harmonizes rejuvenating health tonics like Amla.</p>
+                  <p>• <strong className="text-[#D4AF37]">South-East (Agni):</strong> Connected to the fire element. Suits warming spices like Ginger and Cinnamon.</p>
                 </div>
               </div>
             )}
@@ -292,20 +292,20 @@ export const LearningQuizPage: React.FC = () => {
         /* GAMIFIED QUIZ INTERFACE: Question 4 / 10, Progress Bar, Question, Answer cards, Summary */
         <div className="max-w-2xl mx-auto space-y-6">
           {!quizFinished && currentQ ? (
-            <div className="bg-white rounded-[2.5rem] p-8 sm:p-10 border border-[#E2E8F0] space-y-6 shadow-sm">
+            <div className="luxury-card bg-[#0B1D16]/90 rounded-[2.5rem] p-8 sm:p-10 border border-[#D4AF37]/30 space-y-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
               {/* Question Header: “Question 4 / 10” + Progress bar */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono text-[#64748B]">
-                  <span className="font-bold text-[#0F172A]">
+                <div className="flex items-center justify-between text-xs font-mono text-[#A3C1AD]">
+                  <span className="font-bold text-[#F4EFE6]">
                     Question {currentIndex + 1} / {questions.length}
                   </span>
-                  <span>Score: {userScore}</span>
+                  <span className="text-[#D4AF37] font-bold">Score: {userScore}</span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full h-1.5 rounded-full bg-[#E2E8F0] overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-[#0E281E] border border-[#D4AF37]/20 overflow-hidden">
                   <div
-                    className="h-full bg-[#2563EB] rounded-full transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-[#D4AF37] to-[#F6D985] rounded-full transition-all duration-300"
                     style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
                   />
                 </div>
@@ -313,17 +313,17 @@ export const LearningQuizPage: React.FC = () => {
 
               {/* Question Text */}
               <div className="space-y-2 pt-2">
-                <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                <span className="bg-[#0E281E] text-[#D4AF37] border border-[#D4AF37]/30 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
                   {currentQ.ayushCategory}
                 </span>
-                <h3 className="text-xl font-serif font-bold text-[#0F172A] leading-snug">
+                <h3 className="text-xl font-serif font-bold text-[#F4EFE6] leading-snug">
                   {currentQ.question}
                 </h3>
               </div>
 
               {/* Plant Photo if plant-identification */}
               {currentQ.image && (
-                <div className="h-52 rounded-2xl overflow-hidden border border-[#E2E8F0] bg-[#F1F5F9]">
+                <div className="h-52 rounded-2xl overflow-hidden border border-[#D4AF37]/30 bg-[#0E281E]/60 shadow-inner">
                   <img
                     src={currentQ.image}
                     alt="Plant clue"
@@ -338,14 +338,14 @@ export const LearningQuizPage: React.FC = () => {
                   const isSelected = selectedOption === oIdx;
                   const isCorrect = oIdx === currentQ.correctAnswerIndex;
 
-                  let cardStyle = 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] hover:border-[#CBD5E1] text-[#0F172A]';
+                  let cardStyle = 'border-[#D4AF37]/20 bg-[#0E281E]/60 hover:bg-[#0E281E] hover:border-[#D4AF37]/50 text-[#F4EFE6]';
                   if (isSelected && !isAnswerSubmitted) {
-                    cardStyle = 'border-[#2563EB] bg-[#2563EB]/5 text-[#2563EB] ring-2 ring-[#2563EB] font-bold';
+                    cardStyle = 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#F6D985] ring-2 ring-[#D4AF37] font-bold';
                   } else if (isAnswerSubmitted) {
                     if (isCorrect) {
-                      cardStyle = 'border-[#22C55E] bg-[#22C55E]/10 text-[#0F172A] font-bold';
+                      cardStyle = 'border-[#10B981] bg-[#10B981]/20 text-[#6ee7b7] font-bold';
                     } else if (isSelected && !isCorrect) {
-                      cardStyle = 'border-[#EF4444] bg-[#EF4444]/10 text-[#EF4444] font-bold';
+                      cardStyle = 'border-[#EF4444] bg-[#EF4444]/20 text-[#fca5a5] font-bold';
                     }
                   }
 
@@ -359,7 +359,7 @@ export const LearningQuizPage: React.FC = () => {
                     >
                       <span>{opt}</span>
                       {isAnswerSubmitted && isCorrect && (
-                        <CheckCircle className="w-4 h-4 text-[#22C55E] shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0" />
                       )}
                       {isAnswerSubmitted && isSelected && !isCorrect && (
                         <XCircle className="w-4 h-4 text-[#EF4444] shrink-0" />
@@ -371,11 +371,11 @@ export const LearningQuizPage: React.FC = () => {
 
               {/* Explanation Reveal */}
               {isAnswerSubmitted && (
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#0F172A] space-y-1 animate-fadeIn">
-                  <strong className="text-[#0F172A] block font-bold">
+                <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 text-xs text-[#F4EFE6] space-y-1 animate-fadeIn">
+                  <strong className="text-[#D4AF37] block font-bold">
                     {selectedOption === currentQ.correctAnswerIndex ? '✓ Correct!' : '✗ Explanation:'}
                   </strong>
-                  <p className="leading-relaxed text-[#64748B]">{currentQ.explanation}</p>
+                  <p className="leading-relaxed text-[#A3C1AD]">{currentQ.explanation}</p>
                 </div>
               )}
 
@@ -386,7 +386,7 @@ export const LearningQuizPage: React.FC = () => {
                     type="button"
                     disabled={selectedOption === null}
                     onClick={handleSubmitAnswer}
-                    className="py-3 px-8 rounded-full bg-[#2563EB] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-xs font-bold tracking-wider transition duration-200 disabled:opacity-40"
+                    className="py-3 px-8 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold tracking-wider transition duration-200 disabled:opacity-40"
                   >
                     Confirm Answer
                   </button>
@@ -394,7 +394,7 @@ export const LearningQuizPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNextQuestion}
-                    className="py-3 px-8 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#F97316]/20 flex items-center gap-1.5"
+                    className="py-3 px-8 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold tracking-wider transition duration-200 shadow-md shadow-[#D4AF37]/20 flex items-center gap-1.5"
                   >
                     {currentIndex + 1 < questions.length ? 'Next Question →' : 'View Results 🎉'}
                   </button>
@@ -403,34 +403,34 @@ export const LearningQuizPage: React.FC = () => {
             </div>
           ) : (
             /* After completion show: “Your Herbal Knowledge”, Score, Plants learned, Topics completed */
-            <div className="bg-white rounded-[3rem] p-10 border border-[#E2E8F0] text-center space-y-6 shadow-sm animate-fadeIn">
+            <div className="luxury-card bg-[#0B1D16]/95 rounded-[3rem] p-10 border border-[#D4AF37]/30 text-center space-y-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-fadeIn">
               <span className="text-4xl block">🏆</span>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
                   CHALLENGE COMPLETE
                 </span>
-                <h3 className="text-3xl font-serif font-bold text-[#0F172A]">
+                <h3 className="text-3xl font-serif font-bold luxury-gold-text">
                   Your Herbal Knowledge
                 </h3>
               </div>
 
               {/* Score Metric Cards */}
               <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2 text-xs">
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold block">Score</span>
-                  <strong className="text-2xl font-serif text-[#2563EB] mt-1 block">
+                <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25">
+                  <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Score</span>
+                  <strong className="text-2xl font-serif text-[#D4AF37] mt-1 block">
                     {userScore}/{questions.length}
                   </strong>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold block">Plants Learned</span>
-                  <strong className="text-2xl font-serif text-[#2563EB] mt-1 block">
+                <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25">
+                  <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Plants Learned</span>
+                  <strong className="text-2xl font-serif text-[#D4AF37] mt-1 block">
                     {questions.length}
                   </strong>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold block">Topics Completed</span>
-                  <strong className="text-2xl font-serif text-[#2563EB] mt-1 block">
+                <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25">
+                  <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Topics Completed</span>
+                  <strong className="text-2xl font-serif text-[#D4AF37] mt-1 block">
                     5
                   </strong>
                 </div>
@@ -440,7 +440,7 @@ export const LearningQuizPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleRestartQuiz}
-                  className="py-3 px-6 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold flex items-center gap-2 transition duration-200 shadow-sm"
+                  className="py-3 px-6 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold flex items-center gap-2 transition duration-200 shadow-sm"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Try Again</span>
@@ -448,7 +448,7 @@ export const LearningQuizPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('learn')}
-                  className="py-3 px-6 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] text-xs font-bold transition duration-200"
+                  className="py-3 px-6 rounded-full bg-[#0E281E]/80 hover:bg-[#0E281E] border border-[#D4AF37]/30 text-[#F4EFE6] text-xs font-bold transition duration-200"
                 >
                   Review Learning Cards
                 </button>

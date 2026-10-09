@@ -17,7 +17,8 @@
     "lucide-react": "^1.52.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "virtual-herbal-garden": "file:.."
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

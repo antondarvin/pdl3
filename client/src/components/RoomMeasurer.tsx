@@ -166,18 +166,18 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-5 sm:p-8 lg:p-10 border border-[#E2E8F0] shadow-sm space-y-8 animate-fadeIn text-[#0F172A]">
+    <div className="luxury-card rounded-[2.5rem] p-5 sm:p-8 lg:p-10 border border-[#D4AF37]/30 shadow-xl space-y-8 animate-fadeIn text-[#F4EFE6] bg-[#0B1D16]/90 backdrop-blur-xl">
       
       {/* 1. Header with Mode Switcher & Unit Toggle */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#D4AF37]/25 pb-6">
         <div>
-          <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
             MEASURE MY GARDEN
           </span>
-          <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#0F172A] mt-0.5">
+          <h3 className="text-xl sm:text-2xl font-serif font-bold luxury-gold-text mt-0.5">
             Garden Space Measurement & Area
           </h3>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#A3C1AD] mt-1">
             Define your available botanical perimeter using interactive touch boundaries, camera perspective estimation, or manual length & width.
           </p>
         </div>
@@ -186,14 +186,14 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
         <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
           
           {/* Unit Toggle: Feet/Inches vs Meters/Centimeters */}
-          <div className="bg-[#F1F5F9] p-1 rounded-full border border-[#E2E8F0] flex items-center text-xs font-bold">
+          <div className="bg-[#081711] p-1.5 rounded-full border border-[#D4AF37]/30 flex items-center text-xs font-bold shadow-inner">
             <button
               type="button"
               onClick={() => setUnit('ft')}
-              className={`px-3 py-1.5 rounded-full transition duration-200 min-h-[38px] ${
+              className={`px-3 py-1.5 rounded-full transition duration-200 min-h-[36px] ${
                 unit === 'ft'
-                  ? 'bg-[#2563EB] text-white shadow-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'luxury-btn-gold text-[#081711] shadow-md'
+                  : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
               }`}
             >
               ft / in
@@ -201,10 +201,10 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
             <button
               type="button"
               onClick={() => setUnit('m')}
-              className={`px-3 py-1.5 rounded-full transition duration-200 min-h-[38px] ${
+              className={`px-3 py-1.5 rounded-full transition duration-200 min-h-[36px] ${
                 unit === 'm'
-                  ? 'bg-[#2563EB] text-white shadow-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'luxury-btn-gold text-[#081711] shadow-md'
+                  : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
               }`}
             >
               m / cm
@@ -212,43 +212,43 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="bg-[#F1F5F9] p-1 rounded-full border border-[#E2E8F0] flex items-center text-xs font-bold">
+          <div className="bg-[#081711] p-1.5 rounded-full border border-[#D4AF37]/30 flex items-center text-xs font-bold shadow-inner">
             <button
               type="button"
               onClick={() => setMeasuringMode('2d')}
-              className={`px-3 sm:px-3.5 py-1.5 rounded-full transition duration-200 flex items-center gap-1.5 min-h-[38px] ${
+              className={`px-3 sm:px-3.5 py-1.5 rounded-full transition duration-200 flex items-center gap-1.5 min-h-[36px] ${
                 measuringMode === '2d'
-                  ? 'bg-white text-[#0F172A] shadow-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'luxury-btn-gold text-[#081711] shadow-md'
+                  : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
               }`}
             >
-              <Move className="w-3.5 h-3.5 text-[#2563EB]" />
+              <Move className="w-3.5 h-3.5 text-current" />
               <span>Interactive 2D</span>
             </button>
 
             <button
               type="button"
               onClick={() => setMeasuringMode('camera')}
-              className={`px-3 sm:px-3.5 py-1.5 rounded-full transition duration-200 flex items-center gap-1.5 min-h-[38px] ${
+              className={`px-3 sm:px-3.5 py-1.5 rounded-full transition duration-200 flex items-center gap-1.5 min-h-[36px] ${
                 measuringMode === 'camera'
-                  ? 'bg-white text-[#0F172A] shadow-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'luxury-btn-gold text-[#081711] shadow-md'
+                  : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
               }`}
             >
-              <Camera className="w-3.5 h-3.5 text-[#22C55E]" />
+              <Camera className="w-3.5 h-3.5 text-current" />
               <span>Camera View</span>
             </button>
 
             <button
               type="button"
               onClick={() => setMeasuringMode('manual')}
-              className={`px-3 sm:px-3.5 py-1.5 rounded-full transition duration-200 flex items-center gap-1.5 min-h-[38px] ${
+              className={`px-3 sm:px-3.5 py-1.5 rounded-full transition duration-200 flex items-center gap-1.5 min-h-[36px] ${
                 measuringMode === 'manual'
-                  ? 'bg-white text-[#0F172A] shadow-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'luxury-btn-gold text-[#081711] shadow-md'
+                  : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
               }`}
             >
-              <Sliders className="w-3.5 h-3.5 text-[#F97316]" />
+              <Sliders className="w-3.5 h-3.5 text-current" />
               <span>Manual Inputs</span>
             </button>
           </div>
@@ -257,16 +257,16 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
 
       {/* Quick Dimension Presets Pill Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+        <span className="text-[11px] font-bold text-[#A3C1AD] uppercase tracking-wider shrink-0">
           Quick Presets:
         </span>
         <button
           type="button"
           onClick={() => handleApplyPreset(10, 8)}
-          className={`px-3 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
+          className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
             length === 10 && width === 8
-              ? 'bg-[#2563EB] text-white border-[#2563EB]'
-              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+              ? 'luxury-btn-gold text-[#081711] border-transparent shadow-sm'
+              : 'bg-[#0E281E]/80 border-[#D4AF37]/25 text-[#A3C1AD] hover:bg-[#133528]'
           }`}
         >
           Balcony (10 × 8 ft • 80 sq.ft)
@@ -274,10 +274,10 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
         <button
           type="button"
           onClick={() => handleApplyPreset(15, 10)}
-          className={`px-3 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
+          className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
             length === 15 && width === 10
-              ? 'bg-[#2563EB] text-white border-[#2563EB]'
-              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+              ? 'luxury-btn-gold text-[#081711] border-transparent shadow-sm'
+              : 'bg-[#0E281E]/80 border-[#D4AF37]/25 text-[#A3C1AD] hover:bg-[#133528]'
           }`}
         >
           Veranda (15 × 10 ft • 150 sq.ft)
@@ -285,10 +285,10 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
         <button
           type="button"
           onClick={() => handleApplyPreset(20, 15)}
-          className={`px-3 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
+          className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
             length === 20 && width === 15
-              ? 'bg-[#2563EB] text-white border-[#2563EB]'
-              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+              ? 'luxury-btn-gold text-[#081711] border-transparent shadow-sm'
+              : 'bg-[#0E281E]/80 border-[#D4AF37]/25 text-[#A3C1AD] hover:bg-[#133528]'
           }`}
         >
           Garden (20 × 15 ft • 300 sq.ft)
@@ -296,10 +296,10 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
         <button
           type="button"
           onClick={() => handleApplyPreset(25, 20)}
-          className={`px-3 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
+          className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition ${
             length === 25 && width === 20
-              ? 'bg-[#2563EB] text-white border-[#2563EB]'
-              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+              ? 'luxury-btn-gold text-[#081711] border-transparent shadow-sm'
+              : 'bg-[#0E281E]/80 border-[#D4AF37]/25 text-[#A3C1AD] hover:bg-[#133528]'
           }`}
         >
           Terrace (25 × 20 ft • 500 sq.ft)
@@ -326,13 +326,13 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
               }}
               onTouchEnd={() => setDragCornerIndex(null)}
               style={{ touchAction: 'none' }}
-              className="relative w-full aspect-[4/3] rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 shadow-inner select-none overflow-hidden flex flex-col items-center justify-center cursor-crosshair group"
+              className="relative w-full aspect-[4/3] rounded-3xl bg-[#081711] border border-[#D4AF37]/30 p-6 shadow-inner select-none overflow-hidden flex flex-col items-center justify-center cursor-crosshair group"
             >
-              {/* Architectural Grid pattern */}
-              <div className="absolute inset-0 opacity-40 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] bg-[size:24px_24px]" />
+              {/* Architectural Grid pattern in antique gold */}
+              <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#d4af3720_1px,transparent_1px),linear-gradient(to_bottom,#d4af3720_1px,transparent_1px)] bg-[size:24px_24px]" />
 
               {/* Garden Boundary Polygon / Box */}
-              <div className="relative w-4/5 h-4/5 rounded-2xl border-2 border-[#2563EB] bg-white/95 shadow-md flex flex-col items-center justify-center p-6 transition-all">
+              <div className="relative w-4/5 h-4/5 rounded-2xl border-2 border-[#D4AF37] bg-[#0E281E]/95 shadow-2xl flex flex-col items-center justify-center p-6 transition-all">
                 {/* 4 Interactive Corner Drag Handles with touch support */}
                 {[
                   { pos: '-top-3.5 -left-3.5', label: 'C1' },
@@ -350,7 +350,7 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                       e.stopPropagation();
                       setDragCornerIndex(idx);
                     }}
-                    className={`absolute ${c.pos} w-8 h-8 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg ring-4 ring-blue-200 hover:scale-110 active:scale-95 transition duration-150 z-30`}
+                    className={`absolute ${c.pos} w-8 h-8 rounded-full luxury-btn-gold text-[#081711] text-[10px] font-bold flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg ring-4 ring-[#D4AF37]/30 hover:scale-110 active:scale-95 transition duration-150 z-30`}
                     title={`Drag corner ${c.label}`}
                   >
                     {c.label}
@@ -359,42 +359,42 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
 
                 {/* Length dimension indicator */}
                 <div className="absolute -top-3.5 inset-x-12 flex items-center justify-center pointer-events-none">
-                  <div className="bg-white border border-[#2563EB] text-[#2563EB] px-3 py-0.5 rounded-full text-xs font-mono font-bold shadow-xs">
+                  <div className="bg-[#0B1D16] border border-[#D4AF37]/50 text-[#F6D985] px-3.5 py-0.5 rounded-full text-xs font-mono font-bold shadow-md">
                     Length: {unit === 'ft' ? `${length} ft` : `${lengthM} m`}
                   </div>
                 </div>
 
                 {/* Width dimension indicator */}
                 <div className="absolute -right-12 top-1/2 -translate-y-1/2 rotate-90 flex items-center justify-center pointer-events-none">
-                  <div className="bg-white border border-[#2563EB] text-[#2563EB] px-3 py-0.5 rounded-full text-xs font-mono font-bold shadow-xs whitespace-nowrap">
+                  <div className="bg-[#0B1D16] border border-[#D4AF37]/50 text-[#F6D985] px-3.5 py-0.5 rounded-full text-xs font-mono font-bold shadow-md whitespace-nowrap">
                     Width: {unit === 'ft' ? `${width} ft` : `${widthM} m`}
                   </div>
                 </div>
 
                 {/* Center Badge with Area */}
                 <div className="text-center space-y-1">
-                  <span className="text-[10px] font-mono tracking-wider text-[#2563EB] uppercase font-bold block">
+                  <span className="text-[10px] font-mono tracking-wider text-[#D4AF37] uppercase font-bold block">
                     GARDEN BOUNDARY PERIMETER
                   </span>
-                  <div className="text-3xl sm:text-4xl font-serif font-bold text-[#0F172A]">
+                  <div className="text-3xl sm:text-4xl font-serif font-bold luxury-gold-text">
                     {unit === 'ft' ? (
                       <>
-                        {totalAreaSqFt} <span className="text-sm font-sans font-normal text-[#64748B]">sq ft</span>
+                        {totalAreaSqFt} <span className="text-sm font-sans font-normal text-[#A3C1AD]">sq ft</span>
                       </>
                     ) : (
                       <>
-                        {totalAreaSqM} <span className="text-sm font-sans font-normal text-[#64748B]">sq m</span>
+                        {totalAreaSqM} <span className="text-sm font-sans font-normal text-[#A3C1AD]">sq m</span>
                       </>
                     )}
                   </div>
-                  <p className="text-xs text-[#64748B] font-mono">
+                  <p className="text-xs text-[#A3C1AD] font-mono">
                     {unit === 'ft' ? `${length} ft × ${width} ft` : `${lengthM} m × ${widthM} m`}
                   </p>
                 </div>
               </div>
 
               {/* Guidance Pill */}
-              <div className="absolute bottom-3 inset-x-6 text-center text-[11px] text-[#64748B] bg-white/90 backdrop-blur-md py-1.5 px-3 rounded-full border border-[#E2E8F0] shadow-xs">
+              <div className="absolute bottom-3 inset-x-6 text-center text-[11px] text-[#A3C1AD] bg-[#0B1D16]/90 backdrop-blur-md py-1.5 px-3 rounded-full border border-[#D4AF37]/30 shadow-md">
                 💡 Drag the 4 corner handles (C1–C4) to resize your garden boundary with touch or mouse.
               </div>
             </div>
@@ -410,7 +410,7 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                     handleCameraTapCoordinates(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget);
                   }
                 }}
-                className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden bg-slate-900 border border-slate-700 shadow-md cursor-crosshair group"
+                className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden bg-[#081711] border border-[#D4AF37]/35 shadow-xl cursor-crosshair group"
               >
                 {cameraActive ? (
                   <video
@@ -425,14 +425,14 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                     <img
                       src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1200&q=80"
                       alt="Room / Patio surface"
-                      className="w-full h-full object-cover opacity-75"
+                      className="w-full h-full object-cover opacity-60"
                     />
-                    <div className="absolute inset-0 bg-black/35" />
+                    <div className="absolute inset-0 bg-[#081711]/60" />
                   </div>
                 )}
 
-                {/* Optical Grid Floor Projection */}
-                <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(#2563eb_1.5px,transparent_1.5px)] [background-size:24px_24px]" />
+                {/* Optical Grid Floor Projection in Liquid Gold */}
+                <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(#d4af37_1.5px,transparent_1.5px)] [background-size:24px_24px]" />
 
                 {/* Marked Corners */}
                 {cameraPoints.map((pt, idx) => (
@@ -441,7 +441,7 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                     style={{ left: `${pt.x}%`, top: `${pt.y}%` }}
                     className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-30"
                   >
-                    <div className="w-7 h-7 rounded-full bg-[#22C55E] text-white text-xs font-bold flex items-center justify-center shadow-xl ring-4 ring-green-300/40">
+                    <div className="w-7 h-7 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold flex items-center justify-center shadow-xl ring-4 ring-[#D4AF37]/40">
                       C{idx + 1}
                     </div>
                   </div>
@@ -449,9 +449,9 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
 
                 {/* Status HUD Header */}
                 <div className="absolute top-3 inset-x-3 flex items-center justify-between text-xs text-white z-40 pointer-events-none">
-                  <div className="bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-ping" />
-                    <span>Tap 4 corners ({cameraPoints.length}/4)</span>
+                  <div className="bg-[#0B1D16]/90 backdrop-blur-md px-3.5 py-1 rounded-full border border-[#D4AF37]/30 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping" />
+                    <span className="text-[#F6D985] font-semibold">Tap 4 corners ({cameraPoints.length}/4)</span>
                   </div>
 
                   <div className="pointer-events-auto flex items-center gap-1.5">
@@ -462,10 +462,10 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                           e.stopPropagation();
                           toggleCameraFacing();
                         }}
-                        className="bg-black/70 hover:bg-black text-slate-200 px-3 py-1 rounded-full border border-white/20 flex items-center gap-1 transition text-xs"
+                        className="bg-[#0B1D16]/90 hover:bg-[#133528] text-[#F4EFE6] px-3 py-1 rounded-full border border-[#D4AF37]/30 flex items-center gap-1 transition text-xs"
                         title="Flip Camera (Front / Back)"
                       >
-                        <RotateCw className="w-3 h-3 text-[#22C55E]" /> Flip
+                        <RotateCw className="w-3 h-3 text-[#D4AF37]" /> Flip
                       </button>
                     )}
                     <button
@@ -474,28 +474,28 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                         e.stopPropagation();
                         setCameraPoints([]);
                       }}
-                      className="bg-black/70 hover:bg-black text-slate-200 px-3 py-1 rounded-full border border-white/20 flex items-center gap-1 transition text-xs"
+                      className="bg-[#0B1D16]/90 hover:bg-[#133528] text-[#F4EFE6] px-3 py-1 rounded-full border border-[#D4AF37]/30 flex items-center gap-1 transition text-xs"
                     >
-                      <RefreshCw className="w-3 h-3" /> Reset
+                      <RefreshCw className="w-3 h-3 text-[#D4AF37]" /> Reset
                     </button>
                   </div>
                 </div>
 
                 {/* Prominent Optical Estimation Disclaimer */}
-                <div className="absolute bottom-3 inset-x-3 bg-slate-950/90 backdrop-blur-md p-3 rounded-2xl border border-white/10 text-white text-[11px] space-y-1 z-40">
-                  <div className="flex items-center gap-1.5 text-[#F97316] font-bold">
+                <div className="absolute bottom-3 inset-x-3 bg-[#081711]/95 backdrop-blur-md p-3.5 rounded-2xl border border-[#D4AF37]/30 text-[#F4EFE6] text-[11px] space-y-1 z-40">
+                  <div className="flex items-center gap-1.5 text-[#E07A5F] font-bold">
                     <Info className="w-3.5 h-3.5" />
                     <span>Camera Measurement Disclaimer (Estimated)</span>
                   </div>
-                  <p className="text-slate-300 leading-relaxed">
+                  <p className="text-[#A3C1AD] leading-relaxed">
                     Camera measurements are perspective optical estimates. Standard device cameras without LiDAR do not produce exact millimeter measurements. Verify dimensions with manual entry below.
                   </p>
                 </div>
               </div>
 
               {cameraError && (
-                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-[#3D2608] border border-[#D4AF37]/30 text-xs text-[#F6D985] flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-[#E07A5F] shrink-0" />
                   <span>{cameraError} Tap the simulated courtyard photo above to mark 4 corners.</span>
                 </div>
               )}
@@ -504,12 +504,12 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
 
           {/* MODE 3: DIRECT NUMERIC SLIDERS */}
           {measuringMode === 'manual' && (
-            <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-6">
+            <div className="p-6 rounded-3xl bg-[#0E281E]/80 border border-[#D4AF37]/30 space-y-6 shadow-lg">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37]">
                   MANUAL PRECISION INPUT
                 </span>
-                <h4 className="text-lg font-serif font-bold text-[#0F172A]">
+                <h4 className="text-lg font-serif font-bold luxury-gold-text">
                   Enter Exact Garden Space Dimensions
                 </h4>
               </div>
@@ -517,8 +517,8 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span>Garden Length:</span>
-                    <strong className="text-[#2563EB] font-mono">
+                    <span className="text-[#A3C1AD]">Garden Length:</span>
+                    <strong className="text-[#F6D985] font-mono">
                       {unit === 'ft' ? `${length} ft` : `${lengthM} m`}
                     </strong>
                   </div>
@@ -529,14 +529,14 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                     step={unit === 'ft' ? 1 : 0.5}
                     value={unit === 'ft' ? length : lengthM}
                     onChange={(e) => handleUpdateLength(parseFloat(e.target.value))}
-                    className="w-full accent-[#2563EB] cursor-pointer"
+                    className="w-full accent-[#D4AF37] cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span>Garden Width:</span>
-                    <strong className="text-[#2563EB] font-mono">
+                    <span className="text-[#A3C1AD]">Garden Width:</span>
+                    <strong className="text-[#F6D985] font-mono">
                       {unit === 'ft' ? `${width} ft` : `${widthM} m`}
                     </strong>
                   </div>
@@ -547,7 +547,7 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                     step={unit === 'ft' ? 1 : 0.5}
                     value={unit === 'ft' ? width : widthM}
                     onChange={(e) => handleUpdateWidth(parseFloat(e.target.value))}
-                    className="w-full accent-[#2563EB] cursor-pointer"
+                    className="w-full accent-[#D4AF37] cursor-pointer"
                   />
                 </div>
               </div>
@@ -560,8 +560,8 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
           
           {/* Numeric Input Fields */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-blue-100 transition space-y-1">
-              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+            <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/30 transition space-y-1">
+              <label className="text-[10px] font-bold text-[#A3C1AD] uppercase tracking-wider block">
                 Length ({unit})
               </label>
               <input
@@ -571,13 +571,13 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                 step="0.5"
                 value={unit === 'ft' ? length : lengthM}
                 onChange={(e) => handleUpdateLength(parseFloat(e.target.value) || 0)}
-                className="w-full text-2xl font-serif font-bold text-[#0F172A] bg-transparent focus:outline-none font-mono"
+                className="w-full text-2xl font-serif font-bold text-[#F4EFE6] bg-transparent focus:outline-none font-mono"
               />
-              <span className="text-[10px] text-[#64748B] block">Available length</span>
+              <span className="text-[10px] text-[#A3C1AD] block">Available length</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-blue-100 transition space-y-1">
-              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+            <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/30 transition space-y-1">
+              <label className="text-[10px] font-bold text-[#A3C1AD] uppercase tracking-wider block">
                 Width ({unit})
               </label>
               <input
@@ -587,62 +587,62 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
                 step="0.5"
                 value={unit === 'ft' ? width : widthM}
                 onChange={(e) => handleUpdateWidth(parseFloat(e.target.value) || 0)}
-                className="w-full text-2xl font-serif font-bold text-[#0F172A] bg-transparent focus:outline-none font-mono"
+                className="w-full text-2xl font-serif font-bold text-[#F4EFE6] bg-transparent focus:outline-none font-mono"
               />
-              <span className="text-[10px] text-[#64748B] block">Available width</span>
+              <span className="text-[10px] text-[#A3C1AD] block">Available width</span>
             </div>
           </div>
 
-          {/* Area Calculation Breakdown Card (Exact requirement) */}
-          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
-            <div className="border-b border-[#E2E8F0] pb-3 flex items-center justify-between">
-              <h4 className="text-sm font-serif font-bold text-[#0F172A]">
+          {/* Area Calculation Breakdown Card */}
+          <div className="p-6 rounded-3xl bg-[#0E281E]/90 border border-[#D4AF37]/30 shadow-xl space-y-4">
+            <div className="border-b border-[#D4AF37]/25 pb-3 flex items-center justify-between">
+              <h4 className="text-sm font-serif font-bold luxury-gold-text">
                 Area Breakdown (Length × Width)
               </h4>
-              <span className="text-[10px] font-mono text-[#2563EB] font-bold bg-blue-50 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono text-[#081711] font-bold bg-[#D4AF37] px-2.5 py-0.5 rounded-full shadow-2xs">
                 AUTO-CALCULATED
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-[#64748B]">Length:</span>
-                <strong className="text-[#0F172A] font-mono text-sm">
+              <div className="flex justify-between items-center py-1 border-b border-[#D4AF37]/15">
+                <span className="text-[#A3C1AD]">Length:</span>
+                <strong className="text-[#F4EFE6] font-mono text-sm">
                   {unit === 'ft' ? `${length} ft` : `${lengthM} m`}
                 </strong>
               </div>
 
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-[#64748B]">Width:</span>
-                <strong className="text-[#0F172A] font-mono text-sm">
+              <div className="flex justify-between items-center py-1 border-b border-[#D4AF37]/15">
+                <span className="text-[#A3C1AD]">Width:</span>
+                <strong className="text-[#F4EFE6] font-mono text-sm">
                   {unit === 'ft' ? `${width} ft` : `${widthM} m`}
                 </strong>
               </div>
 
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-[#64748B] font-semibold">Total Area:</span>
-                <strong className="text-[#2563EB] font-serif text-base">
+              <div className="flex justify-between items-center py-1 border-b border-[#D4AF37]/15">
+                <span className="text-[#A3C1AD] font-semibold">Total Area:</span>
+                <strong className="text-[#F6D985] font-serif text-base">
                   {unit === 'ft' ? `${totalAreaSqFt} sq.ft` : `${totalAreaSqM} sq.m`}
                 </strong>
               </div>
 
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-[#64748B]">Available Area:</span>
-                <strong className="text-[#22C55E] font-mono text-sm">
+              <div className="flex justify-between items-center py-1 border-b border-[#D4AF37]/15">
+                <span className="text-[#A3C1AD]">Available Area:</span>
+                <strong className="text-[#68D391] font-mono text-sm">
                   {unit === 'ft' ? `${availableAreaSqFt} sq.ft` : `${availableAreaSqM} sq.m`}
                 </strong>
               </div>
 
-              <div className="flex justify-between items-center py-1 border-b border-slate-100">
-                <span className="text-[#64748B]">Used Area:</span>
-                <strong className="text-[#F97316] font-mono text-sm">
+              <div className="flex justify-between items-center py-1 border-b border-[#D4AF37]/15">
+                <span className="text-[#A3C1AD]">Used Area:</span>
+                <strong className="text-[#E07A5F] font-mono text-sm">
                   {unit === 'ft' ? `${usedAreaSqFt} sq.ft` : `${usedAreaSqM} sq.m`}
                 </strong>
               </div>
 
               <div className="flex justify-between items-center py-1">
-                <span className="text-[#64748B]">Remaining Area:</span>
-                <strong className="text-[#0F172A] font-mono text-sm">
+                <span className="text-[#A3C1AD]">Remaining Area:</span>
+                <strong className="text-[#F4EFE6] font-mono text-sm">
                   {unit === 'ft' ? `${remainingAreaSqFt} sq.ft` : `${remainingAreaSqM} sq.m`}
                 </strong>
               </div>
@@ -650,14 +650,14 @@ export const RoomMeasurer: React.FC<RoomMeasurerProps> = ({
           </div>
 
           {/* Plant Capacity Guidance */}
-          <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#64748B] space-y-1.5 leading-relaxed">
-            <span className="font-bold text-[#0F172A] flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
+          <div className="p-4 rounded-2xl bg-[#0B1D16]/80 border border-[#D4AF37]/25 text-xs text-[#A3C1AD] space-y-1.5 leading-relaxed shadow-md">
+            <span className="font-bold text-[#F4EFE6] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
               Botanical Capacity Guidance
             </span>
             <p>
-              With <strong className="text-[#0F172A]">{totalAreaSqFt} sq.ft</strong>, this space can comfortably accommodate approximately{' '}
-              <strong className="text-[#2563EB]">
+              With <strong className="text-[#F6D985]">{totalAreaSqFt} sq.ft</strong>, this space can comfortably accommodate approximately{' '}
+              <strong className="text-[#D4AF37]">
                 {Math.max(2, Math.floor(totalAreaSqFt / 12))} to {Math.max(4, Math.floor(totalAreaSqFt / 6))}
               </strong>{' '}
               medicinal planters while maintaining standard 1.5–2.5 ft plant spacing clearance.

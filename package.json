@@ -3,10 +3,20 @@
   "version": "1.0.0",
   "description": "Virtual Herbal Garden – AYUSH & Vastu Garden Planner",
   "private": true,
+  "type": "module",
   "scripts": {
+    "build": "npm --prefix client install && npm --prefix client run build",
     "client": "npm --prefix client run dev",
     "server": "npm --prefix server run start",
     "dev": "node start-dev.js",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0"
   }
 }

@@ -34,6 +34,12 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
+import {
+  filterPlantsByVastuDirection,
+  getVastuDirectionMetadata,
+  VASTU_DIRECTIONS,
+  normalizeVastuDirection
+} from '../utils/vastuRules';
 
 interface Garden3DVisualizationProps {
   gardenLength: number; // in feet
@@ -94,6 +100,21 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
   // Dimension edit state for in-place measurement
   const [editLength, setEditLength] = useState<number>(gardenLength);
   const [editWidth, setEditWidth] = useState<number>(gardenWidth);
+
+  // Vastu Direction filtering state for Add Plant nursery
+  const [nurseryDirection, setNurseryDirection] = useState<string>(direction);
+
+  useEffect(() => {
+    setNurseryDirection(direction);
+  }, [direction]);
+
+  const canonicalNurseryDir = normalizeVastuDirection(nurseryDirection);
+  const nurseryDirMeta = getVastuDirectionMetadata(canonicalNurseryDir);
+
+  // STRICT VASTU FILTERING: Only show plants auspicious for the selected direction
+  const vastuFilteredNurseryPlants = useMemo(() => {
+    return filterPlantsByVastuDirection(catalogPlants, canonicalNurseryDir);
+  }, [catalogPlants, canonicalNurseryDir]);
 
   // Camera Orbit Parameters
   const orbitState = useRef({
@@ -959,7 +980,7 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
   return (
     <div
       ref={containerWrapperRef}
-      className={`relative rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl select-none transition-all duration-300 ${
+      className={`relative rounded-3xl overflow-hidden bg-[#081711] border border-[#D4AF37]/35 shadow-2xl select-none transition-all duration-300 ${
         isFullscreen ? 'fixed inset-0 z-50 rounded-none' : className
       }`}
     >
@@ -967,12 +988,12 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
       <div className="absolute top-3 inset-x-3 sm:top-4 sm:inset-x-4 z-30 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
         
         {/* Left: Dimension & Spacing Pill */}
-        <div className="pointer-events-auto bg-slate-950/85 backdrop-blur-xl px-3 sm:px-4 py-2 rounded-full border border-slate-700/80 text-white flex items-center gap-2 shadow-lg text-xs">
+        <div className="pointer-events-auto bg-[#0B1D16]/90 backdrop-blur-xl px-3 sm:px-4 py-2 rounded-full border border-[#D4AF37]/30 text-[#F4EFE6] flex items-center gap-2 shadow-lg text-xs">
           {onDirectionChange ? (
             <select
               value={direction}
               onChange={(e) => onDirectionChange(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-emerald-400 font-serif font-bold text-xs rounded-full px-2 py-0.5 outline-none cursor-pointer hover:border-emerald-500"
+              className="bg-[#0E281E] border border-[#D4AF37]/30 text-[#F6D985] font-serif font-bold text-xs rounded-full px-2 py-0.5 outline-none cursor-pointer hover:border-[#D4AF37]/60"
               title="Change garden facing direction"
             >
               {[
@@ -985,23 +1006,23 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
                 'West',
                 'North-West',
               ].map((d) => (
-                <option key={d} value={d} className="bg-slate-950 text-white">
+                <option key={d} value={d} className="bg-[#081711] text-[#F4EFE6]">
                   🧭 Facing: {d}
                 </option>
               ))}
             </select>
           ) : (
-            <span className="font-serif font-bold text-emerald-400">🌿 {direction}</span>
+            <span className="font-serif font-bold text-[#F6D985]">🌿 {direction}</span>
           )}
-          <span className="text-slate-600">•</span>
-          <span className="text-slate-200 font-mono text-[11px] sm:text-xs">
+          <span className="text-[#D4AF37]/30">•</span>
+          <span className="text-[#A3C1AD] font-mono text-[11px] sm:text-xs">
             {unitMode === 'ft' ? (
               <>
-                <strong className="text-white">{gardenLength} ft</strong> × <strong className="text-white">{gardenWidth} ft</strong> ({areaStats.totalGardenAreaSqFt} sq.ft)
+                <strong className="text-[#F4EFE6]">{gardenLength} ft</strong> × <strong className="text-[#F4EFE6]">{gardenWidth} ft</strong> ({areaStats.totalGardenAreaSqFt} sq.ft)
               </>
             ) : (
               <>
-                <strong className="text-white">{Math.round(gardenLength * 0.3048 * 10) / 10} m</strong> × <strong className="text-white">{Math.round(gardenWidth * 0.3048 * 10) / 10} m</strong> ({areaStats.totalAreaSqM} sq.m)
+                <strong className="text-[#F4EFE6]">{Math.round(gardenLength * 0.3048 * 10) / 10} m</strong> × <strong className="text-[#F4EFE6]">{Math.round(gardenWidth * 0.3048 * 10) / 10} m</strong> ({areaStats.totalAreaSqM} sq.m)
               </>
             )}
           </span>
@@ -1010,7 +1031,7 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
           <button
             type="button"
             onClick={() => setShowDimensionsModal(true)}
-            className="ml-1 text-[11px] font-bold text-[#F97316] hover:underline flex items-center gap-1 min-h-[36px] min-w-[36px] justify-center"
+            className="ml-1 text-[11px] font-bold text-[#D4AF37] hover:underline flex items-center gap-1 min-h-[36px] min-w-[36px] justify-center"
             title="Edit garden length and width"
           >
             <Ruler className="w-3.5 h-3.5" />
@@ -1022,18 +1043,18 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
         {selectedPlacedPlant && (
           <div className="pointer-events-auto">
             {isSelectedPlantTooClose ? (
-              <div className="bg-[#EF4444]/90 backdrop-blur-xl px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-red-400 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1.5 sm:gap-2 shadow-lg">
-                <AlertTriangle className="w-3.5 h-3.5 text-white shrink-0" />
+              <div className="bg-[#3B1212]/95 backdrop-blur-xl px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-[#EF4444]/60 text-[#FCA5A5] text-[11px] sm:text-xs font-bold flex items-center gap-1.5 sm:gap-2 shadow-lg">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#EF4444] shrink-0" />
                 <span>⚠️ Too close</span>
                 {nearestNeighborInfo && (
-                  <span className="hidden sm:inline font-normal text-red-100">
+                  <span className="hidden sm:inline font-normal text-red-200">
                     ({selectedPlacedPlant.name.split(' ')[0]} is {nearestNeighborInfo.distanceFt} ft from {nearestNeighborInfo.name.split(' ')[0]})
                   </span>
                 )}
               </div>
             ) : (
-              <div className="bg-[#22C55E]/90 backdrop-blur-xl px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-green-400 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1.5 sm:gap-2 shadow-lg">
-                <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
+              <div className="bg-[#0E281E]/95 backdrop-blur-xl px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-[#68D391]/60 text-[#68D391] text-[11px] sm:text-xs font-bold flex items-center gap-1.5 sm:gap-2 shadow-lg">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#68D391] shrink-0" />
                 <span>✓ Clear spacing</span>
               </div>
             )}
@@ -1047,7 +1068,7 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
           <button
             type="button"
             onClick={() => setUnitMode(unitMode === 'ft' ? 'm' : 'ft')}
-            className="bg-slate-950/80 backdrop-blur-xl px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-mono font-bold text-slate-300 hover:text-white border border-slate-700/80 transition"
+            className="bg-[#0B1D16]/90 backdrop-blur-xl px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-mono font-bold text-[#A3C1AD] hover:text-[#F4EFE6] border border-[#D4AF37]/30 transition"
             title="Switch unit"
           >
             {unitMode === 'ft' ? 'FT' : 'M'}
@@ -1059,12 +1080,12 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
             onClick={() => setQualityMode(qualityMode === 'hq' ? 'eco' : 'hq')}
             className={`p-2 rounded-full backdrop-blur-xl border transition shadow text-xs font-bold flex items-center gap-1 ${
               qualityMode === 'eco'
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-slate-950/80 text-slate-300 border-slate-700 hover:text-white'
+                ? 'bg-[#D4AF37]/20 text-[#F6D985] border-[#D4AF37]/50'
+                : 'bg-[#0B1D16]/90 text-[#A3C1AD] border-[#D4AF37]/30 hover:text-[#F4EFE6]'
             }`}
             title={qualityMode === 'eco' ? 'Eco Mode active (Optimized for battery & mobile)' : 'High Quality graphics'}
           >
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span className="text-[10px] hidden sm:inline">{qualityMode === 'eco' ? 'ECO' : 'HQ'}</span>
           </button>
 
@@ -1074,8 +1095,8 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
             onClick={() => setShowGrid(!showGrid)}
             className={`p-2 rounded-full backdrop-blur-xl border transition shadow ${
               showGrid
-                ? 'bg-[#2563EB] text-white border-blue-400'
-                : 'bg-slate-950/80 text-slate-400 hover:text-white border-slate-700'
+                ? 'luxury-btn-gold text-[#081711] border-transparent'
+                : 'bg-[#0B1D16]/90 text-[#A3C1AD] hover:text-[#F4EFE6] border-[#D4AF37]/30'
             }`}
             title="Toggle Grid"
           >
@@ -1086,22 +1107,22 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
           <button
             type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-full bg-slate-950/80 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700 transition"
+            className="p-2 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl text-[#A3C1AD] hover:text-[#F4EFE6] border border-[#D4AF37]/30 transition"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
 
-          {/* View in My Space (Camera AR) */}
+          {/* View in Your Space (Camera AR) */}
           {onViewInMySpace && (
             <button
               type="button"
               onClick={onViewInMySpace}
-              className="bg-emerald-600/90 hover:bg-emerald-600 text-white px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold flex items-center gap-1.5 shadow transition"
-              title="Camera AR View"
+              className="luxury-btn-gold text-[#081711] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#D4AF37]/20 transition"
+              title="View in Your Space (Camera AR)"
             >
-              <Camera className="w-3.5 h-3.5 text-white" />
-              <span className="hidden sm:inline">Camera AR</span>
+              <Camera className="w-3.5 h-3.5 text-[#081711] animate-pulse" />
+              <span>View in Your Space</span>
             </button>
           )}
         </div>
@@ -1124,7 +1145,7 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
 
       {/* Visual Placement Toast when Dragging */}
       {isDraggingPlant && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-black/85 backdrop-blur-xl text-white px-4 sm:px-5 py-2 rounded-full border border-[#2563EB] shadow-2xl flex items-center gap-2 pointer-events-none animate-pulse text-xs font-bold">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-[#0B1D16]/95 backdrop-blur-xl text-[#F4EFE6] px-4 sm:px-5 py-2 rounded-full border border-[#D4AF37] shadow-2xl flex items-center gap-2 pointer-events-none animate-pulse text-xs font-bold">
           <span>🌱</span>
           <span>Dragging {draggedPlantName} within boundary</span>
         </div>
@@ -1132,13 +1153,13 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
 
       {/* Optimization Toast Notification */}
       {optimizationToast && (
-        <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 max-w-md bg-slate-900/95 backdrop-blur-xl border border-[#22C55E] text-white p-3.5 rounded-2xl shadow-2xl flex items-start gap-3 animate-fadeIn text-xs">
-          <Sparkles className="w-4 h-4 text-[#22C55E] shrink-0 mt-0.5" />
+        <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 max-w-md bg-[#0E281E]/95 backdrop-blur-xl border border-[#68D391] text-[#F4EFE6] p-3.5 rounded-2xl shadow-2xl flex items-start gap-3 animate-fadeIn text-xs">
+          <Sparkles className="w-4 h-4 text-[#68D391] shrink-0 mt-0.5" />
           <div className="flex-1">
-            <strong className="text-white block font-semibold">Garden Optimized</strong>
-            <p className="text-slate-300 mt-0.5 text-[11px]">{optimizationToast}</p>
+            <strong className="text-[#F6D985] block font-semibold">Garden Optimized</strong>
+            <p className="text-[#A3C1AD] mt-0.5 text-[11px]">{optimizationToast}</p>
           </div>
-          <button onClick={() => setOptimizationToast(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setOptimizationToast(null)} className="text-[#A3C1AD] hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -1149,43 +1170,43 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
         <button
           type="button"
           onClick={() => handleZoom('in')}
-          className="w-10 h-10 rounded-full bg-slate-900/85 backdrop-blur-xl border border-slate-700/80 text-white flex items-center justify-center hover:bg-slate-800 active:scale-95 transition shadow-lg"
+          className="w-10 h-10 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center hover:bg-[#133528] active:scale-95 transition shadow-lg"
           title="Zoom In"
         >
-          <ZoomIn className="w-4 h-4 text-[#2563EB]" />
+          <ZoomIn className="w-4 h-4" />
         </button>
 
         <button
           type="button"
           onClick={() => handleZoom('out')}
-          className="w-10 h-10 rounded-full bg-slate-900/85 backdrop-blur-xl border border-slate-700/80 text-white flex items-center justify-center hover:bg-slate-800 active:scale-95 transition shadow-lg"
+          className="w-10 h-10 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center hover:bg-[#133528] active:scale-95 transition shadow-lg"
           title="Zoom Out"
         >
-          <ZoomOut className="w-4 h-4 text-[#2563EB]" />
+          <ZoomOut className="w-4 h-4" />
         </button>
 
         <button
           type="button"
           onClick={() => handleRotateOrbit('left')}
-          className="w-10 h-10 rounded-full bg-slate-900/85 backdrop-blur-xl border border-slate-700/80 text-white flex items-center justify-center hover:bg-slate-800 active:scale-95 transition shadow-lg"
+          className="w-10 h-10 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl border border-[#D4AF37]/30 text-[#68D391] flex items-center justify-center hover:bg-[#133528] active:scale-95 transition shadow-lg"
           title="Orbit Left"
         >
-          <RotateCcw className="w-4 h-4 text-emerald-400" />
+          <RotateCcw className="w-4 h-4" />
         </button>
 
         <button
           type="button"
           onClick={() => handleRotateOrbit('right')}
-          className="w-10 h-10 rounded-full bg-slate-900/85 backdrop-blur-xl border border-slate-700/80 text-white flex items-center justify-center hover:bg-slate-800 active:scale-95 transition shadow-lg"
+          className="w-10 h-10 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl border border-[#D4AF37]/30 text-[#68D391] flex items-center justify-center hover:bg-[#133528] active:scale-95 transition shadow-lg"
           title="Orbit Right"
         >
-          <RotateCw className="w-4 h-4 text-emerald-400" />
+          <RotateCw className="w-4 h-4" />
         </button>
 
         <button
           type="button"
           onClick={handleResetOrbit}
-          className="w-10 h-10 rounded-full bg-slate-900/85 backdrop-blur-xl border border-slate-700/80 text-white flex items-center justify-center hover:bg-slate-800 active:scale-95 transition shadow-lg text-[10px] font-bold"
+          className="w-10 h-10 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl border border-[#D4AF37]/30 text-[#F6D985] flex items-center justify-center hover:bg-[#133528] active:scale-95 transition shadow-lg text-[10px] font-bold"
           title="Reset Camera View"
         >
           ⌂
@@ -1194,19 +1215,19 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
 
       {/* 4. FLOATING STATISTICS PANEL (RESPONSIVE) */}
       <div className={`absolute top-16 left-3 sm:left-4 z-30 transition-all duration-300 ${showStatsDrawer ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-6 pointer-events-none'}`}>
-        <div className="bg-slate-950/90 backdrop-blur-2xl rounded-2xl p-4 border border-slate-700/80 text-white shadow-2xl w-60 sm:w-64 space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="luxury-card bg-[#0B1D16]/95 backdrop-blur-2xl rounded-2xl p-4 border border-[#D4AF37]/35 text-[#F4EFE6] shadow-2xl w-60 sm:w-64 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#D4AF37]/25 pb-2">
             <div>
-              <span className="text-[9px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+              <span className="text-[9px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
                 METRICS ENGINE
               </span>
-              <h4 className="text-xs font-serif font-bold text-white">
+              <h4 className="text-xs font-serif font-bold luxury-gold-text">
                 Garden Statistics
               </h4>
             </div>
             <button
               onClick={() => setShowStatsDrawer(false)}
-              className="text-slate-500 hover:text-white p-1"
+              className="text-[#A3C1AD] hover:text-white p-1"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -1214,42 +1235,42 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
 
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Total Area:</span>
-              <strong className="text-white font-mono">
+              <span className="text-[#A3C1AD]">Total Area:</span>
+              <strong className="text-[#F6D985] font-mono">
                 {unitMode === 'ft' ? `${areaStats.totalGardenAreaSqFt} sq.ft` : `${areaStats.totalAreaSqM} sq.m`}
               </strong>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Plant Occupied:</span>
-              <strong className="text-[#2563EB] font-mono">
+              <span className="text-[#A3C1AD]">Plant Occupied:</span>
+              <strong className="text-[#D4AF37] font-mono">
                 {unitMode === 'ft' ? `${areaStats.plantOccupiedAreaSqFt} sq.ft` : `${Math.round(areaStats.plantOccupiedAreaSqFt * 0.0929 * 10) / 10} sq.m`}
               </strong>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Available Area:</span>
-              <strong className="text-[#22C55E] font-mono">
+              <span className="text-[#A3C1AD]">Available Area:</span>
+              <strong className="text-[#68D391] font-mono">
                 {unitMode === 'ft' ? `${areaStats.availableAreaSqFt} sq.ft` : `${areaStats.availableAreaSqM} sq.m`}
               </strong>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Plants Placed:</span>
-              <strong className="text-white font-mono">{areaStats.numberOfPlants}</strong>
+              <span className="text-[#A3C1AD]">Plants Placed:</span>
+              <strong className="text-[#F4EFE6] font-mono">{areaStats.numberOfPlants}</strong>
             </div>
 
-            <div className="pt-2 border-t border-slate-800 space-y-1">
+            <div className="pt-2 border-t border-[#D4AF37]/20 space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-slate-400">Utilization:</span>
-                <strong className={areaStats.isOvercrowded ? 'text-[#EF4444]' : 'text-[#22C55E]'}>
+                <span className="text-[#A3C1AD]">Utilization:</span>
+                <strong className={areaStats.isOvercrowded ? 'text-[#EF4444]' : 'text-[#68D391]'}>
                   {areaStats.spaceUtilizationPercent}%
                 </strong>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-[#0E281E] overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 ${
-                    areaStats.isOvercrowded ? 'bg-[#EF4444]' : areaStats.spaceUtilizationPercent > 70 ? 'bg-[#F97316]' : 'bg-[#22C55E]'
+                    areaStats.isOvercrowded ? 'bg-[#EF4444]' : areaStats.spaceUtilizationPercent > 70 ? 'bg-[#E07A5F]' : 'bg-[#68D391]'
                   }`}
                   style={{ width: `${Math.min(100, areaStats.spaceUtilizationPercent)}%` }}
                 />
@@ -1263,9 +1284,9 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
         <button
           type="button"
           onClick={() => setShowStatsDrawer(true)}
-          className="absolute top-16 left-3 sm:left-4 z-30 bg-slate-950/80 backdrop-blur-xl text-white px-3 py-1.5 rounded-full border border-slate-700 text-[11px] font-semibold flex items-center gap-1.5 hover:bg-slate-900 transition shadow-xl pointer-events-auto"
+          className="absolute top-16 left-3 sm:left-4 z-30 bg-[#0B1D16]/90 backdrop-blur-xl text-[#F4EFE6] px-3 py-1.5 rounded-full border border-[#D4AF37]/30 text-[11px] font-semibold flex items-center gap-1.5 hover:bg-[#133528] transition shadow-xl pointer-events-auto"
         >
-          <Layers className="w-3 h-3 text-[#2563EB]" />
+          <Layers className="w-3 h-3 text-[#D4AF37]" />
           <span>Stats ({areaStats.spaceUtilizationPercent}%)</span>
         </button>
       )}
@@ -1275,64 +1296,64 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
         
         {/* Selected Plant Floating Dock */}
         {selectedPlacedPlant ? (
-          <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-2xl rounded-2xl p-2.5 sm:p-3 border border-slate-700/80 shadow-2xl flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3 text-white max-w-xl">
+          <div className="pointer-events-auto bg-[#0B1D16]/95 backdrop-blur-2xl rounded-2xl p-2.5 sm:p-3 border border-[#D4AF37]/35 shadow-2xl flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3 text-[#F4EFE6] max-w-xl">
             <img
               src={selectedPlacedPlant.image}
               alt={selectedPlacedPlant.name}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover border border-slate-700 shrink-0"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover border border-[#D4AF37]/30 shrink-0"
             />
 
             <div className="min-w-0 pr-1 flex-1 sm:flex-initial">
-              <h4 className="text-xs font-serif font-bold text-white truncate">
+              <h4 className="text-xs font-serif font-bold luxury-gold-text truncate">
                 {selectedPlacedPlant.name}
               </h4>
-              <p className="text-[10px] text-slate-400 font-mono truncate">
+              <p className="text-[10px] text-[#A3C1AD] font-mono truncate">
                 Spacing: {selectedPlantSpacingConfig?.recommendedSpacingFt || 1.5} ft • Scale: {selectedPlacedPlant.scale}x
               </p>
             </div>
 
-            {/* Quick Action Touch Buttons (Min 44px tap area) */}
-            <div className="flex items-center gap-1 border-l border-slate-800 pl-2 shrink-0">
+            {/* Quick Action Touch Buttons */}
+            <div className="flex items-center gap-1 border-l border-[#D4AF37]/20 pl-2 shrink-0">
               <button
                 type="button"
                 onClick={() => handleRotateSelected(45)}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 flex items-center justify-center transition"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#0E281E] hover:bg-[#133528] active:scale-95 text-[#D4AF37] flex items-center justify-center transition border border-[#D4AF37]/20"
                 title="Rotate 45°"
               >
-                <RotateCw className="w-3.5 h-3.5 text-[#2563EB]" />
+                <RotateCw className="w-3.5 h-3.5" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleScalePlant(selectedPlacedPlant.scale + 0.1)}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 flex items-center justify-center transition"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#0E281E] hover:bg-[#133528] active:scale-95 text-[#F4EFE6] flex items-center justify-center transition border border-[#D4AF37]/20"
                 title="Scale Larger"
               >
-                <ZoomIn className="w-3.5 h-3.5" />
+                <ZoomIn className="w-3.5 h-3.5 text-[#68D391]" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleScalePlant(selectedPlacedPlant.scale - 0.1)}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 flex items-center justify-center transition"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#0E281E] hover:bg-[#133528] active:scale-95 text-[#F4EFE6] flex items-center justify-center transition border border-[#D4AF37]/20"
                 title="Scale Smaller"
               >
-                <ZoomOut className="w-3.5 h-3.5" />
+                <ZoomOut className="w-3.5 h-3.5 text-[#68D391]" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleDuplicatePlant(selectedPlacedPlant)}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 flex items-center justify-center transition"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#0E281E] hover:bg-[#133528] active:scale-95 text-[#D4AF37] flex items-center justify-center transition border border-[#D4AF37]/20"
                 title="Duplicate Plant"
               >
-                <Copy className="w-3.5 h-3.5 text-[#F97316]" />
+                <Copy className="w-3.5 h-3.5" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleDeletePlant(selectedPlacedPlant.id)}
-                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-800 hover:bg-red-900/50 active:scale-95 text-[#EF4444] flex items-center justify-center transition"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#3B1212] hover:bg-[#521919] active:scale-95 text-[#EF4444] flex items-center justify-center transition border border-[#EF4444]/30"
                 title="Remove Plant"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -1340,7 +1361,7 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
             </div>
           </div>
         ) : (
-          <div className="pointer-events-auto bg-slate-950/70 backdrop-blur-md px-4 py-2 rounded-full border border-slate-800 text-xs text-slate-300">
+          <div className="pointer-events-auto bg-[#0B1D16]/85 backdrop-blur-md px-4 py-2 rounded-full border border-[#D4AF37]/30 text-xs text-[#A3C1AD]">
             Touch or click any botanical planter to move and customize.
           </div>
         )}
@@ -1352,10 +1373,10 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
             type="button"
             onClick={handleOptimizeGarden}
             disabled={plants.length === 0}
-            className="flex-1 sm:flex-initial py-2.5 sm:py-3 px-4 sm:px-5 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs tracking-wider transition border border-slate-700 shadow-xl flex items-center justify-center gap-1.5 disabled:opacity-40 min-h-[44px]"
+            className="flex-1 sm:flex-initial py-2.5 sm:py-3 px-4 sm:px-5 rounded-full luxury-btn-secondary text-[#F4EFE6] font-bold text-xs tracking-wider transition border border-[#D4AF37]/30 shadow-xl flex items-center justify-center gap-1.5 disabled:opacity-40 min-h-[44px]"
             title="Auto-arrange plants with clear spacing"
           >
-            <Wand2 className="w-4 h-4 text-[#2563EB]" />
+            <Wand2 className="w-4 h-4 text-[#D4AF37]" />
             <span>Optimize</span>
           </button>
 
@@ -1363,7 +1384,7 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
           <button
             type="button"
             onClick={() => setShowCatalogDrawer(true)}
-            className="flex-1 sm:flex-initial py-2.5 sm:py-3 px-5 sm:px-6 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white font-bold text-xs tracking-wider transition shadow-xl shadow-orange-500/20 flex items-center justify-center gap-2 min-h-[44px]"
+            className="flex-1 sm:flex-initial py-2.5 sm:py-3 px-5 sm:px-6 rounded-full luxury-btn-copper text-white font-bold text-xs tracking-wider transition shadow-xl flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Plus className="w-4 h-4 text-white" />
             <span>Add Plant</span>
@@ -1373,20 +1394,20 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
 
       {/* 6. IN-PLACE GARDEN DIMENSIONS MODAL */}
       {showDimensionsModal && (
-        <div className="absolute inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 text-[#0F172A] space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="absolute inset-0 z-50 bg-[#081711]/85 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
+          <div className="w-full max-w-md luxury-card bg-[#0B1D16]/98 rounded-3xl p-6 shadow-2xl border border-[#D4AF37]/35 text-[#F4EFE6] space-y-5">
+            <div className="flex items-center justify-between border-b border-[#D4AF37]/25 pb-3">
               <div>
-                <span className="text-[10px] font-bold tracking-[0.2em] text-[#2563EB] uppercase block">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase block">
                   SPACE MEASUREMENT
                 </span>
-                <h3 className="text-xl font-serif font-bold text-[#0F172A]">
+                <h3 className="text-xl font-serif font-bold luxury-gold-text">
                   Garden Dimensions & Area
                 </h3>
               </div>
               <button
                 onClick={() => setShowDimensionsModal(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800"
+                className="p-1.5 rounded-full text-[#A3C1AD] hover:text-[#F4EFE6]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1395,8 +1416,8 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
             {/* Dimension Inputs */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                <div className="p-3.5 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 space-y-1">
+                  <label className="text-[10px] font-bold text-[#A3C1AD] uppercase tracking-wider block">
                     Length ({unitMode})
                   </label>
                   <input
@@ -1406,12 +1427,12 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
                     step="1"
                     value={editLength}
                     onChange={(e) => setEditLength(Math.max(3, Number(e.target.value)))}
-                    className="w-full text-2xl font-serif font-bold text-[#0F172A] bg-transparent focus:outline-none"
+                    className="w-full text-2xl font-serif font-bold text-[#F4EFE6] bg-transparent focus:outline-none"
                   />
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                <div className="p-3.5 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 space-y-1">
+                  <label className="text-[10px] font-bold text-[#A3C1AD] uppercase tracking-wider block">
                     Width ({unitMode})
                   </label>
                   <input
@@ -1421,37 +1442,37 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
                     step="1"
                     value={editWidth}
                     onChange={(e) => setEditWidth(Math.max(2, Number(e.target.value)))}
-                    className="w-full text-2xl font-serif font-bold text-[#0F172A] bg-transparent focus:outline-none"
+                    className="w-full text-2xl font-serif font-bold text-[#F4EFE6] bg-transparent focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Area Breakdown Card */}
-              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 space-y-2 text-xs">
+              <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 space-y-2 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Total Garden Area:</span>
-                  <strong className="text-[#2563EB] font-mono text-sm">
+                  <span className="text-[#A3C1AD]">Total Garden Area:</span>
+                  <strong className="text-[#F6D985] font-mono text-sm">
                     {editLength * editWidth} sq.ft
                   </strong>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Current Plants Placed:</span>
-                  <strong className="text-slate-800 font-mono">
+                  <span className="text-[#A3C1AD]">Current Plants Placed:</span>
+                  <strong className="text-[#F4EFE6] font-mono">
                     {plants.length} planters
                   </strong>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Used Botanical Area:</span>
-                  <strong className="text-[#F97316] font-mono">
+                  <span className="text-[#A3C1AD]">Used Botanical Area:</span>
+                  <strong className="text-[#E07A5F] font-mono">
                     {calculateGardenAreaStats(editLength, editWidth, plants).plantOccupiedAreaSqFt} sq.ft
                   </strong>
                 </div>
 
-                <div className="flex justify-between items-center border-t border-blue-200/60 pt-1.5">
-                  <span className="text-slate-600">Remaining Free Area:</span>
-                  <strong className="text-[#22C55E] font-mono text-sm">
+                <div className="flex justify-between items-center border-t border-[#D4AF37]/20 pt-1.5">
+                  <span className="text-[#A3C1AD]">Remaining Free Area:</span>
+                  <strong className="text-[#68D391] font-mono text-sm">
                     {calculateGardenAreaStats(editLength, editWidth, plants).availableAreaSqFt} sq.ft
                   </strong>
                 </div>
@@ -1462,14 +1483,14 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDimensionsModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                className="px-4 py-2 text-xs font-semibold text-[#A3C1AD] hover:text-[#F4EFE6]"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleApplyDimensions}
-                className="px-6 py-2.5 rounded-full bg-[#2563EB] hover:bg-[#1d4ed8] text-white text-xs font-bold transition shadow-xs"
+                className="px-6 py-2.5 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold transition shadow-xs"
               >
                 Apply Dimensions
               </button>
@@ -1478,80 +1499,129 @@ export const Garden3DVisualization: React.FC<Garden3DVisualizationProps> = ({
         </div>
       )}
 
-      {/* 7. PLANT CATALOG SELECTION DRAWER (MOBILE BOTTOM SHEET & DESKTOP SIDEBAR) */}
+      {/* 7. PLANT CATALOG SELECTION DRAWER */}
       {showCatalogDrawer && (
-        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-fadeIn">
-          <div className="w-full max-w-md bg-white h-full p-5 sm:p-6 flex flex-col justify-between shadow-2xl animate-slideInRight text-[#0F172A]">
+        <div className="absolute inset-0 z-50 bg-[#081711]/80 backdrop-blur-sm flex justify-end animate-fadeIn">
+          <div className="w-full max-w-md luxury-card bg-[#0B1D16]/98 h-full p-5 sm:p-6 flex flex-col justify-between shadow-2xl animate-slideInRight text-[#F4EFE6] border-l border-[#D4AF37]/35">
             
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D4AF37]/25">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB] block">
-                  BOTANICAL NURSERY
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37] block">
+                  VASTU BOTANICAL NURSERY
                 </span>
-                <h3 className="text-xl font-serif font-bold text-[#0F172A]">
+                <h3 className="text-xl font-serif font-bold luxury-gold-text">
                   Place Plant in 3D Garden
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCatalogDrawer(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800"
+                className="p-1.5 rounded-full text-[#A3C1AD] hover:text-[#F4EFE6]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Catalog List */}
-            <div className="overflow-y-auto py-3 space-y-2.5 flex-1 pr-1">
-              {catalogPlants.map((plant) => {
-                const config = getPlantSpacingInfo(plant);
-                return (
-                  <div
-                    key={plant._id}
-                    onClick={() => handleAddPlantFromCatalog(plant)}
-                    className="p-3 rounded-2xl border border-slate-200 hover:border-[#2563EB] hover:bg-blue-50/40 cursor-pointer transition flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={plant.image}
-                        alt={plant.name}
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
-                      />
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-serif font-bold text-[#0F172A] group-hover:text-[#2563EB]">
-                          {plant.name}
-                        </h4>
-                        <p className="text-[10px] text-slate-500 font-mono italic">
-                          {plant.scientificName}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-1 text-[9px] text-slate-600">
-                          <span className="bg-slate-100 px-2 py-0.5 rounded-full font-semibold">
-                            Spacing: {config.recommendedSpacingFt} ft
-                          </span>
-                          <span className="bg-blue-50 text-[#2563EB] px-2 py-0.5 rounded-full font-semibold">
-                            {config.sunlightNeed}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
+            {/* Vastu Direction Filter Bar */}
+            <div className="py-2.5 border-b border-[#D4AF37]/20">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-medium text-[#A3C1AD]">
+                  Vastu Orientation Zone:
+                </span>
+                <span className="text-[11px] font-bold text-[#F6D985]">
+                  {nurseryDirMeta.name} • {nurseryDirMeta.sanskrit}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.keys(VASTU_DIRECTIONS).map((dirKey) => {
+                  const isSelected = canonicalNurseryDir === dirKey;
+                  return (
                     <button
+                      key={dirKey}
                       type="button"
-                      className="py-1.5 px-3 rounded-full bg-[#2563EB] text-white text-xs font-bold shadow-xs group-hover:bg-[#1D4ED8]"
+                      onClick={() => {
+                        setNurseryDirection(dirKey);
+                        if (onDirectionChange) onDirectionChange(dirKey);
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 ${
+                        isSelected
+                          ? 'luxury-btn-gold text-[#081711] shadow-xs'
+                          : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#F4EFE6]'
+                      }`}
                     >
-                      Place +
+                      {dirKey}
                     </button>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-[#A3C1AD] mt-1.5 italic">
+                Only displaying species auspicious for {canonicalNurseryDir} ({nurseryDirMeta.element}).
+              </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
-              <span>{catalogPlants.length} medicinal species available</span>
+            {/* Catalog List */}
+            <div className="overflow-y-auto py-3 space-y-2.5 flex-1 pr-1">
+              {vastuFilteredNurseryPlants.length === 0 ? (
+                <div className="p-6 text-center luxury-card bg-[#0E281E]/40 border border-[#D4AF37]/20 rounded-2xl my-6">
+                  <AlertTriangle className="w-8 h-8 text-[#D4AF37] mx-auto mb-2 opacity-80" />
+                  <h4 className="text-sm font-serif font-bold text-[#F4EFE6]">
+                    No Species Auspicious for {canonicalNurseryDir}
+                  </h4>
+                  <p className="text-xs text-[#A3C1AD] mt-1">
+                    Please select another direction or adjust your garden orientation.
+                  </p>
+                </div>
+              ) : (
+                vastuFilteredNurseryPlants.map((plant) => {
+                  const config = getPlantSpacingInfo(plant);
+                  return (
+                    <div
+                      key={plant._id}
+                      onClick={() => handleAddPlantFromCatalog(plant)}
+                      className="p-3 rounded-2xl border border-[#D4AF37]/20 bg-[#0E281E]/70 hover:border-[#D4AF37]/50 hover:bg-[#0E281E] cursor-pointer transition flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={plant.image}
+                          alt={plant.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-[#D4AF37]/30 shrink-0"
+                        />
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-serif font-bold text-[#F4EFE6] group-hover:text-[#F6D985]">
+                            {plant.name}
+                          </h4>
+                          <p className="text-[10px] text-[#A3C1AD] font-mono italic">
+                            {plant.scientificName}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1 text-[9px] text-[#A3C1AD]">
+                            <span className="bg-[#081711] px-2 py-0.5 rounded-full font-semibold border border-[#D4AF37]/20">
+                              Spacing: {config.recommendedSpacingFt} ft
+                            </span>
+                            <span className="bg-[#D4AF37]/15 text-[#F6D985] px-2 py-0.5 rounded-full font-semibold border border-[#D4AF37]/30">
+                              {canonicalNurseryDir}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="py-1.5 px-3 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold shadow-xs"
+                      >
+                        Place +
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-[#D4AF37]/25 flex justify-between items-center text-xs text-[#A3C1AD]">
+              <span>{vastuFilteredNurseryPlants.length} Vastu-auspicious species for {canonicalNurseryDir}</span>
               <button
                 type="button"
                 onClick={() => setShowCatalogDrawer(false)}
-                className="text-slate-700 font-semibold hover:underline"
+                className="text-[#F6D985] font-semibold hover:underline"
               >
                 Close
               </button>

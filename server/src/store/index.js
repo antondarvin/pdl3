@@ -6,7 +6,8 @@ import { seedQuizzes } from '../data/seedQuizzes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, '../../data');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DATA_DIR = isServerless ? '/tmp' : path.join(__dirname, '../../data');
 const DB_FILE = path.join(DATA_DIR, 'store.json');
 
 let inMemoryDb = {

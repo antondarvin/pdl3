@@ -76,58 +76,58 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-[#F4EFE6]">
       {/* Dimension & Direction Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 glass-card rounded-2xl border border-slate-200 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 luxury-card rounded-2xl border border-[#D4AF37]/30 bg-[#0B1D16]/90 text-xs shadow-md">
         <div className="flex items-center gap-3">
-          <span className="font-serif font-bold text-[#0F172A] flex items-center gap-1.5">
-            <Compass className="w-4 h-4 text-[#F97316]" />
+          <span className="font-serif font-bold text-[#F4EFE6] flex items-center gap-1.5">
+            <Compass className="w-4 h-4 text-[#D4AF37]" />
             Facing: {direction}
           </span>
-          <span className="text-slate-300">|</span>
-          <span className="text-[#64748B]">
-            Dimensions: <strong className="text-[#0F172A]">{length} ft × {width} ft</strong> ({length * width} sq.ft)
+          <span className="text-[#D4AF37]/30">|</span>
+          <span className="text-[#A3C1AD]">
+            Dimensions: <strong className="text-[#F6D985]">{length} ft × {width} ft</strong> ({length * width} sq.ft)
           </span>
         </div>
-        <span className="text-xs text-[#64748B]">
-          Placed Botanicals: <strong className="text-[#2563EB]">{plants.length}</strong>
+        <span className="text-xs text-[#A3C1AD]">
+          Placed Botanicals: <strong className="text-[#D4AF37]">{plants.length}</strong>
         </span>
       </div>
 
       {/* Top-Down Architectural Layout Canvas */}
-      <div className="relative p-10 rounded-[2.5rem] bg-slate-100 border border-slate-200 shadow-inner overflow-hidden select-none">
+      <div className="relative p-10 rounded-[2.5rem] bg-[#081711] border border-[#D4AF37]/30 shadow-2xl overflow-hidden select-none">
         {/* Cardinal Direction Indicators */}
-        <div className="absolute top-3 inset-x-0 text-center text-[10px] font-mono tracking-[0.25em] text-[#2563EB] uppercase pointer-events-none font-bold">
+        <div className="absolute top-3 inset-x-0 text-center text-[10px] font-mono tracking-[0.25em] text-[#D4AF37] uppercase pointer-events-none font-bold">
           ▲ NORTH
         </div>
-        <div className="absolute bottom-3 inset-x-0 text-center text-[10px] font-mono tracking-[0.25em] text-[#64748B] uppercase pointer-events-none font-bold">
+        <div className="absolute bottom-3 inset-x-0 text-center text-[10px] font-mono tracking-[0.25em] text-[#A3C1AD] uppercase pointer-events-none font-bold">
           ▼ SOUTH
         </div>
-        <div className="absolute top-1/2 left-3 -translate-y-1/2 -rotate-90 text-[10px] font-mono tracking-[0.25em] text-[#64748B] uppercase pointer-events-none font-bold">
+        <div className="absolute top-1/2 left-3 -translate-y-1/2 -rotate-90 text-[10px] font-mono tracking-[0.25em] text-[#A3C1AD] uppercase pointer-events-none font-bold">
           ◄ WEST
         </div>
-        <div className="absolute top-1/2 right-3 -translate-y-1/2 rotate-90 text-[10px] font-mono tracking-[0.25em] text-[#2563EB] uppercase pointer-events-none font-bold">
+        <div className="absolute top-1/2 right-3 -translate-y-1/2 rotate-90 text-[10px] font-mono tracking-[0.25em] text-[#D4AF37] uppercase pointer-events-none font-bold">
           EAST ►
         </div>
 
         {/* Room Area Grid Box */}
         <div
           ref={containerRef}
-          className="relative w-full aspect-[4/3] max-h-[460px] bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
+          className="relative w-full aspect-[4/3] max-h-[460px] bg-[#0B1D16]/95 rounded-3xl border border-[#D4AF37]/25 shadow-inner overflow-hidden"
           style={{
             backgroundImage: `
-              radial-gradient(#2563eb18 1.5px, transparent 1.5px),
-              linear-gradient(to right, #00000005 1px, transparent 1px),
-              linear-gradient(to bottom, #00000005 1px, transparent 1px)
+              radial-gradient(#d4af3722 1.5px, transparent 1.5px),
+              linear-gradient(to right, #d4af3708 1px, transparent 1px),
+              linear-gradient(to bottom, #d4af3708 1px, transparent 1px)
             `,
             backgroundSize: '24px 24px, 48px 48px, 48px 48px',
           }}
         >
           {/* Subtle Vastu Quadrant Guides */}
-          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-500/5 border-b border-l border-blue-500/20 pointer-events-none p-3 text-[10px] font-mono text-[#2563EB] font-semibold text-right">
+          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-[#D4AF37]/5 border-b border-l border-[#D4AF37]/25 pointer-events-none p-3 text-[10px] font-mono text-[#F6D985] font-semibold text-right">
             North-East (Ishanya)
           </div>
-          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-slate-500/5 border-l border-slate-500/15 pointer-events-none p-3 text-[10px] font-mono text-[#64748B] font-semibold text-right flex items-end justify-end">
+          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-[#E07A5F]/5 border-l border-[#E07A5F]/20 pointer-events-none p-3 text-[10px] font-mono text-[#E07A5F] font-semibold text-right flex items-end justify-end">
             South-East (Agni)
           </div>
 
@@ -153,21 +153,21 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
                 }}
                 className={`absolute cursor-move select-none transition-shadow rounded-full flex items-center justify-center ${
                   isSelected
-                    ? 'ring-4 ring-[#2563EB] shadow-xl z-30 scale-105'
-                    : 'ring-2 ring-slate-300 shadow-md hover:ring-[#2563EB] z-10'
+                    ? 'ring-4 ring-[#D4AF37] shadow-xl z-30 scale-105'
+                    : 'ring-2 ring-[#D4AF37]/40 shadow-md hover:ring-[#D4AF37] z-10'
                 }`}
                 title={`${p.name} (Drag to position)`}
               >
                 <img
                   src={p.image}
                   alt={p.name}
-                  className="w-full h-full rounded-full object-cover pointer-events-none border-2 border-white"
+                  className="w-full h-full rounded-full object-cover pointer-events-none border-2 border-[#D4AF37]/50"
                 />
 
-                <div className="absolute -top-1 w-2.5 h-2.5 bg-[#2563EB] rounded-full border border-white" />
+                <div className="absolute -top-1 w-2.5 h-2.5 bg-[#D4AF37] rounded-full border border-[#081711]" />
 
                 <div
-                  className="absolute -bottom-6 whitespace-nowrap glass-card px-2 py-0.5 rounded-full text-[10px] text-[#0F172A] font-bold shadow-xs pointer-events-none border border-slate-200"
+                  className="absolute -bottom-6 whitespace-nowrap bg-[#0B1D16] px-2.5 py-0.5 rounded-full text-[10px] text-[#F4EFE6] font-bold shadow-md pointer-events-none border border-[#D4AF37]/35"
                   style={{ transform: `rotate(${-p.rotation}deg)` }}
                 >
                   {p.name.split(' ')[0]}
@@ -180,18 +180,18 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
 
       {/* Floating Toolbar for Selected Plant */}
       {selectedPlant && (
-        <div className="glass-card rounded-2xl p-4 border border-slate-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn">
+        <div className="luxury-card rounded-2xl p-4 border border-[#D4AF37]/30 bg-[#0E281E]/95 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn">
           <div className="flex items-center gap-3">
             <img
               src={selectedPlant.image}
               alt={selectedPlant.name}
-              className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+              className="w-12 h-12 rounded-xl object-cover border border-[#D4AF37]/35 shadow-sm"
             />
             <div>
-              <h4 className="text-sm font-serif font-bold text-[#0F172A]">
+              <h4 className="text-sm font-serif font-bold luxury-gold-text">
                 {selectedPlant.name}
               </h4>
-              <p className="text-[11px] text-[#64748B] font-mono">
+              <p className="text-[11px] text-[#A3C1AD] font-mono">
                 Rotation: {selectedPlant.rotation}° • Scale: {selectedPlant.scale}x
               </p>
             </div>
@@ -201,7 +201,7 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
             <button
               type="button"
               onClick={() => handleRotate(45)}
-              className="p-2 rounded-full glass-card hover:bg-blue-50 text-[#2563EB] transition border border-slate-200"
+              className="p-2.5 rounded-full luxury-btn-secondary text-[#D4AF37] transition"
               title="Rotate 45°"
             >
               <RotateCw className="w-4 h-4" />
@@ -209,7 +209,7 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
             <button
               type="button"
               onClick={() => handleScale(-0.1)}
-              className="p-2 rounded-full glass-card hover:bg-slate-50 text-[#0F172A] hover:text-[#2563EB] transition border border-slate-200"
+              className="p-2.5 rounded-full luxury-btn-secondary text-[#F4EFE6] transition"
               title="Scale Down"
             >
               <ZoomOut className="w-4 h-4" />
@@ -217,7 +217,7 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
             <button
               type="button"
               onClick={() => handleScale(0.1)}
-              className="p-2 rounded-full glass-card hover:bg-slate-50 text-[#0F172A] hover:text-[#2563EB] transition border border-slate-200"
+              className="p-2.5 rounded-full luxury-btn-secondary text-[#F4EFE6] transition"
               title="Scale Up"
             >
               <ZoomIn className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const Garden2DPlanner: React.FC<Garden2DPlannerProps> = ({
             <button
               type="button"
               onClick={() => handleDelete(selectedPlant.id)}
-              className="p-2 rounded-full hover:bg-red-50 text-[#EF4444] transition duration-200"
+              className="p-2.5 rounded-full bg-[#3B1212] hover:bg-[#521919] text-[#EF4444] border border-[#EF4444]/30 transition duration-200"
               title="Delete Plant"
             >
               <Trash2 className="w-4 h-4" />

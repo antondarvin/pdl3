@@ -21,6 +21,7 @@ interface PlantDetailPageProps {
   onBack: () => void;
   onAddToGarden: (plant: Plant) => void;
   onVisualizeInRoom: (plant: Plant) => void;
+  onViewInYourSpace?: (plant: Plant) => void;
 }
 
 export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
@@ -28,6 +29,7 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
   onBack,
   onAddToGarden,
   onVisualizeInRoom,
+  onViewInYourSpace,
 }) => {
   const { user, savedPlantIds, toggleSavePlant } = useAuth();
   const isSaved = savedPlantIds.has(plant._id);
@@ -42,13 +44,13 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fadeIn text-[#0F172A]">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fadeIn text-[#F4EFE6]">
       {/* Back button */}
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-2 text-xs font-semibold text-[#64748B] hover:text-[#2563EB] bg-white hover:bg-[#F8FAFC] px-4 py-2 rounded-full border border-[#E2E8F0] shadow-xs transition duration-200"
+        className="inline-flex items-center gap-2 text-xs font-semibold text-[#A3C1AD] hover:text-[#F6D985] bg-[#0E281E]/80 hover:bg-[#133528] px-4 py-2 rounded-full border border-[#D4AF37]/30 shadow-xs transition duration-200"
       >
-        <ArrowLeft className="w-3.5 h-3.5" />
+        <ArrowLeft className="w-3.5 h-3.5 text-[#D4AF37]" />
         Back to Botanical Gallery
       </button>
 
@@ -57,9 +59,9 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
         
         {/* Left: Large Immersive Plant Specimen / 3D Model */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="bg-white rounded-[2.5rem] p-3 border border-[#E2E8F0] shadow-sm relative overflow-hidden">
+          <div className="luxury-card rounded-[2.5rem] p-3 border border-[#D4AF37]/30 shadow-xl relative overflow-hidden bg-[#0B1D16]/90 backdrop-blur-xl">
             {activeMediaTab === '3d' ? (
-              <div className="rounded-[2rem] overflow-hidden bg-gradient-to-b from-[#F1F5F9] to-[#F8FAFC]">
+              <div className="rounded-[2rem] overflow-hidden bg-gradient-to-b from-[#081711] to-[#0E281E] border border-[#D4AF37]/15">
                 <Plant3DViewer
                   modelConfig={plant.model3D}
                   plantName={plant.name}
@@ -68,7 +70,7 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
                 />
               </div>
             ) : (
-              <div className="rounded-[2rem] overflow-hidden h-[480px] bg-[#F1F5F9]">
+              <div className="rounded-[2rem] overflow-hidden h-[480px] bg-[#081711] border border-[#D4AF37]/15">
                 <img
                   src={plant.image}
                   alt={plant.name}
@@ -79,14 +81,14 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
 
             {/* Switcher Toggle: 3D Model vs Botanical Photography */}
             <div className="absolute bottom-6 inset-x-0 flex justify-center pointer-events-none">
-              <div className="bg-white/90 backdrop-blur-md rounded-full p-1 border border-[#E2E8F0] shadow-md flex gap-1 pointer-events-auto">
+              <div className="bg-[#0B1D16]/95 backdrop-blur-md rounded-full p-1 border border-[#D4AF37]/35 shadow-lg flex gap-1 pointer-events-auto">
                 <button
                   type="button"
                   onClick={() => setActiveMediaTab('3d')}
-                  className={`px-4 py-1 rounded-full text-xs font-semibold transition duration-200 ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition duration-200 ${
                     activeMediaTab === '3d'
-                      ? 'bg-[#2563EB] text-white shadow-xs'
-                      : 'text-[#64748B] hover:text-[#0F172A]'
+                      ? 'luxury-btn-gold text-[#081711] shadow-md'
+                      : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
                   }`}
                 >
                   3D Specimen
@@ -94,10 +96,10 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveMediaTab('photo')}
-                  className={`px-4 py-1 rounded-full text-xs font-semibold transition duration-200 ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition duration-200 ${
                     activeMediaTab === 'photo'
-                      ? 'bg-[#2563EB] text-white shadow-xs'
-                      : 'text-[#64748B] hover:text-[#0F172A]'
+                      ? 'luxury-btn-gold text-[#081711] shadow-md'
+                      : 'text-[#A3C1AD] hover:text-[#F4EFE6]'
                   }`}
                 >
                   Photography
@@ -110,71 +112,71 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
         {/* Right: Editorial Plant Information Herbarium Sheet */}
         <div className="lg:col-span-6 space-y-6">
           {/* Identity Header */}
-          <div className="space-y-2 border-b border-[#E2E8F0] pb-6">
+          <div className="space-y-2 border-b border-[#D4AF37]/25 pb-6">
             <div className="flex items-center justify-between">
-              <span className="bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[10px] font-bold uppercase tracking-[0.2em] px-3.5 py-1 rounded-full">
+              <span className="bg-[#D4AF37]/15 text-[#F6D985] border border-[#D4AF37]/35 text-[10px] font-bold uppercase tracking-[0.2em] px-3.5 py-1 rounded-full shadow-2xs">
                 {plant.ayushSystem}
               </span>
 
               <button
                 type="button"
                 onClick={handleToggleSave}
-                className="p-2 rounded-full bg-white border border-[#E2E8F0] hover:border-[#EF4444] text-[#64748B] hover:text-[#EF4444] shadow-xs transition duration-200"
+                className="p-2.5 rounded-full bg-[#0E281E]/90 border border-[#D4AF37]/30 hover:border-[#E07A5F] text-[#A3C1AD] hover:text-[#E07A5F] shadow-sm transition duration-200"
                 title={isSaved ? 'Remove from saved' : 'Save to herbarium'}
               >
                 <Heart
                   className={`w-4 h-4 ${
-                    isSaved ? 'text-[#EF4444] fill-[#EF4444]' : ''
+                    isSaved ? 'text-[#E07A5F] fill-[#E07A5F]' : ''
                   }`}
                 />
               </button>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-serif font-bold text-[#0F172A] tracking-tight uppercase">
+            <h1 className="text-4xl sm:text-5xl font-serif font-bold luxury-gold-text tracking-tight uppercase">
               {plant.name}
             </h1>
 
-            <p className="text-sm font-mono italic text-[#64748B]">
+            <p className="text-sm font-mono italic text-[#A3C1AD]">
               {plant.scientificName} {plant.family && `• ${plant.family}`}
             </p>
           </div>
 
-          {/* Prominent Action Buttons: “Place in 3D Garden” and “View in My Space” */}
+          {/* Prominent Action Buttons: “Place in 3D Garden” and “View in Your Space” */}
           <div className="flex flex-wrap gap-3 pt-1">
             <button
               type="button"
               onClick={() => onAddToGarden(plant)}
-              className="flex-1 py-3.5 px-6 rounded-full bg-[#F97316] hover:bg-[#ea580c] active:bg-[#c2410c] text-white text-xs font-bold tracking-wider transition-all duration-200 shadow-md shadow-[#F97316]/20 flex items-center justify-center gap-2"
+              className="flex-1 py-3.5 px-6 rounded-full luxury-btn-copper text-white text-xs font-bold tracking-wider transition-all duration-200 shadow-md flex items-center justify-center gap-2"
             >
               <span>🌱 Place in 3D Garden</span>
             </button>
 
             <button
               type="button"
-              onClick={() => onVisualizeInRoom(plant)}
-              className="py-3.5 px-6 rounded-full bg-white hover:bg-[#F8FAFC] text-[#2563EB] text-xs font-bold tracking-wider transition-all duration-200 border border-[#2563EB]/30 hover:border-[#2563EB] shadow-xs flex items-center justify-center gap-2"
+              onClick={() => (onViewInYourSpace ? onViewInYourSpace(plant) : onVisualizeInRoom(plant))}
+              className="py-3.5 px-6 rounded-full luxury-btn-gold text-[#081711] text-xs font-bold tracking-wider transition-all duration-200 shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center gap-2"
             >
-              <Camera className="w-4 h-4 text-[#2563EB]" />
-              <span>◉ View in My Space</span>
+              <Camera className="w-4 h-4 text-[#081711] animate-pulse" />
+              <span>View in Your Space (AR)</span>
             </button>
           </div>
 
           {/* Description */}
           <div className="space-y-1.5 pt-2">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-[#2563EB]">
+            <span className="text-[10px] font-bold tracking-wider uppercase text-[#D4AF37]">
               Botanical Description
             </span>
-            <p className="text-xs sm:text-sm text-[#0F172A] leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#F4EFE6]/90 leading-relaxed font-sans">
               {plant.description}
             </p>
           </div>
 
           {/* Traditional Uses */}
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold tracking-wider uppercase text-[#2563EB]">
+            <span className="text-[10px] font-bold tracking-wider uppercase text-[#D4AF37]">
               Traditional Uses
             </span>
-            <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#0F172A] leading-relaxed">
+            <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25 text-xs text-[#F4EFE6]/90 leading-relaxed shadow-sm">
               {plant.traditionalUses}
             </div>
           </div>
@@ -182,14 +184,14 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
           {/* Plant Parts Used */}
           {plant.plantPartsUsed && plant.plantPartsUsed.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-[#2563EB]">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-[#D4AF37]">
                 Plant Parts Used
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {plant.plantPartsUsed.map((part, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 rounded-full text-xs bg-white border border-[#E2E8F0] text-[#0F172A] font-medium shadow-2xs"
+                    className="px-3 py-1 rounded-full text-xs bg-[#0B1D16] border border-[#D4AF37]/30 text-[#F4EFE6] font-medium shadow-2xs"
                   >
                     {part}
                   </span>
@@ -200,40 +202,40 @@ export const PlantDetailPage: React.FC<PlantDetailPageProps> = ({
 
           {/* Growing Conditions Matrix: Sunlight, Water, Space, Maintenance */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 text-xs">
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
-              <span className="text-[10px] text-[#64748B] uppercase font-bold block">Sunlight</span>
-              <strong className="text-[#0F172A] mt-0.5 block">{plant.sunlight.split(' ')[0]}</strong>
+            <div className="p-3 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25 shadow-xs">
+              <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Sunlight</span>
+              <strong className="text-[#F6D985] mt-0.5 block">{plant.sunlight.split(' ')[0]}</strong>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
-              <span className="text-[10px] text-[#64748B] uppercase font-bold block">Water</span>
-              <strong className="text-[#0F172A] mt-0.5 block">{plant.watering.split(' ')[0]}</strong>
+            <div className="p-3 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25 shadow-xs">
+              <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Water</span>
+              <strong className="text-[#F6D985] mt-0.5 block">{plant.watering.split(' ')[0]}</strong>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
-              <span className="text-[10px] text-[#64748B] uppercase font-bold block">Space</span>
-              <strong className="text-[#0F172A] mt-0.5 block">{plant.spaceRequired.split(' ')[0]}</strong>
+            <div className="p-3 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25 shadow-xs">
+              <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Space</span>
+              <strong className="text-[#F6D985] mt-0.5 block">{plant.spaceRequired.split(' ')[0]}</strong>
             </div>
 
-            <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
-              <span className="text-[10px] text-[#64748B] uppercase font-bold block">Maintenance</span>
-              <strong className="text-[#0F172A] mt-0.5 block">{plant.maintenanceLevel}</strong>
+            <div className="p-3 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/25 shadow-xs">
+              <span className="text-[10px] text-[#A3C1AD] uppercase font-bold block">Maintenance</span>
+              <strong className="text-[#F6D985] mt-0.5 block">{plant.maintenanceLevel}</strong>
             </div>
           </div>
 
           {/* Vastu Guidance */}
-          <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB] flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5 text-[#F97316]" />
+          <div className="p-4 rounded-2xl bg-[#0E281E]/80 border border-[#D4AF37]/30 shadow-xs space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#F6D985] flex items-center gap-1.5">
+              <Compass className="w-3.5 h-3.5 text-[#D4AF37]" />
               Vastu Guidance: {plant.vastuDirections.join(', ')}
             </span>
-            <p className="text-xs text-[#64748B] leading-relaxed">
+            <p className="text-xs text-[#A3C1AD] leading-relaxed">
               {plant.vastuExplanation}
             </p>
           </div>
 
-          {/* Small Mandatory Disclaimer per prompt: “Traditional and educational information. Not a substitute for professional medical advice.” */}
-          <div className="text-[11px] text-[#64748B] italic pt-1 border-t border-[#E2E8F0]">
+          {/* Small Mandatory Disclaimer per prompt */}
+          <div className="text-[11px] text-[#A3C1AD]/70 italic pt-2 border-t border-[#D4AF37]/20">
             Traditional and educational information. Not a substitute for professional medical advice.
           </div>
         </div>
