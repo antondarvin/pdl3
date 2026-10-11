@@ -3,7 +3,7 @@ import { UserStore } from '../store/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ayush_vastu_garden_secret_key_2026';
 
-export function authenticate(req, res, next) {
+export async function authenticate(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -13,7 +13,7 @@ export function authenticate(req, res, next) {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = UserStore.findById(decoded.userId);
+    const user = await UserStore.findById(decoded.userId);
     if (!user) {
       return res.status(401).json({ message: 'User not found or session expired.' });
     }

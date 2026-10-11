@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
+import { stringId } from './_id.js';
 
 const savedPlantSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  plantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plant', required: true },
+  _id: stringId('sp'),
+  userId: { type: String, ref: 'User', required: true, index: true },
+  plantId: { type: String, ref: 'Plant', required: true },
   savedAt: { type: Date, default: Date.now }
-});
+}, { versionKey: false });
 
-export const SavedPlant = mongoose.model('SavedPlant', savedPlantSchema);
+savedPlantSchema.index({ userId: 1, plantId: 1 }, { unique: true });
+
+export const SavedPlant = mongoose.models.SavedPlant || mongoose.model('SavedPlant', savedPlantSchema);

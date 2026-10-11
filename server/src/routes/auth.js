@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Passwords do not match.' });
     }
 
-    const existing = UserStore.findByEmail(email);
+    const existing = await UserStore.findByEmail(email);
     if (existing) {
       return res.status(409).json({ message: 'An account with this email already exists.' });
     }
@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = UserStore.create({
+    const user = await UserStore.create({
       name: name.trim(),
       email: email.trim().toLowerCase(),
       password: hashedPassword,
@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
     const token = generateToken(user);
     const { password: _, ...safeUser } = user;
 
-    ActivityStore.log(user._id, 'ACCOUNT_CREATED', `Joined Virtual Herbal Garden`);
+    await ActivityStore.log(user._id, 'ACCOUNT_CREATED', `Joined Virtual Herbal Garden`);
 
     res.status(201).json({
       message: 'Account registered successfully!',
@@ -63,7 +63,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    const user = UserStore.findByEmail(email);
+    const user = await UserStore.findByEmail(email);
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
     const token = generateToken(user);
     const { password: _, ...safeUser } = user;
 
-    ActivityStore.log(user._id, 'LOGGED_IN', `Logged into herbal garden portal`);
+    await ActivityStore.log(user._id, 'LOGGED_IN', `Logged into herbal garden portal`);
 
     res.json({
       message: 'Login successful!',
@@ -98,7 +98,7 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ message: 'Email is required.' });
     }
 
-    const user = UserStore.findByEmail(email);
+    const user = await UserStore.findByEmail(email);
     if (!user) {
       return res.status(404).json({ message: 'No account found with this email address.' });
     }
@@ -110,9 +110,9 @@ router.post('/forgot-password', async (req, res) => {
       }
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
-      UserStore.update(user._id, { password: hashedPassword });
+      await UserStore.update(user._id, { password: hashedPassword });
 
-      ActivityStore.log(user._id, 'PASSWORD_RESET', 'Password was successfully reset');
+      await ActivityStore.log(user._id, 'PASSWORD_RESET', 'Password was successfully reset');
 
       return res.json({
         message: 'Password has been successfully updated. You can now login with your new password.'

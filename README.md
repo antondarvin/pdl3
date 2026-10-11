@@ -68,7 +68,7 @@ A modern, responsive, nature-inspired web application combining **AYUSH medicina
 
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide React icons, Three.js, Canvas Confetti.
 - **Backend**: Node.js, Express.js, REST API, JWT authentication, bcryptjs.
-- **Database**: Dual-engine architecture (connects to MongoDB via Mongoose, with automatic persistent local JSON fallback store so it works 100% out of the box with zero database installation required).
+- **Database**: MongoDB via Mongoose (auto-seeding plus a one-time import from the JSON store), with an automatic local JSON fallback when MongoDB is unreachable.
 
 ---
 
@@ -111,6 +111,37 @@ The application will be live at:
 - **Backend API**: `http://localhost:5000/api/`
 
 ---
+
+## 🍃 MongoDB Setup
+
+The API now really stores everything in MongoDB (users, gardens, saved plants, quiz results, activity). If MongoDB can't be reached it falls back to `server/data/store.json`, so the app still runs.
+
+1. Copy `server/.env.example` to `server/.env`.
+2. Set `MONGODB_URI`:
+   - Local: `mongodb://127.0.0.1:27017/ayush_garden`
+   - Atlas: `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/ayush_garden?retryWrites=true&w=majority`
+     (in Atlas → Network Access, allow your IP, or `0.0.0.0/0` for Vercel)
+3. Start the server. On first connection it automatically:
+   - seeds the 22 plants and 10 quiz questions,
+   - copies any existing users and gardens from `store.json` into MongoDB (only into empty collections).
+4. Check `GET /api/health`: `"database": "mongodb"` means you're connected (`"json-fallback"` means you're not).
+5. In production, set `REQUIRE_MONGO=true` so the server fails loudly instead of silently falling back.
+   On Vercel, add `MONGODB_URI`, `JWT_SECRET` and `REQUIRE_MONGO` as Environment Variables.
+
+## 📱 View in Your Space (AR / 3D placement)
+
+| Device | Mode | How the floor is detected |
+|---|---|---|
+| Android Chrome with ARCore | **Start real AR** (WebXR) | Real plane hit-testing, so plants are anchored to the actual floor |
+| iPhone / other phones | **Camera** | Gyroscope tracks rotation; the floor is estimated from phone height and tilt, and the spot locks once the camera is steady |
+| Desktop | **3D** | Virtual floor; drag to orbit, click to place |
+
+- The reticle colour shows the spot quality: **green** (good Vastu zone, light and spacing), **amber** (needs adjusting), **red** (too close to another plant).
+- **Auto-place** searches the garden for a free spot in the plant's auspicious Vastu zone, keeping the required spacing.
+- You can place several plants, then tap or drag a plant to select and move it, and rotate, resize, duplicate or delete it.
+- The ruler measures the floor between two taps; use the result as the garden length or width.
+- **Save** stores the layout in MongoDB. Positions are saved as layout percentages (same format as the 2D planner) plus exact metres (`worldX`/`worldZ`).
+- Camera AR needs **HTTPS** on phones (Vercel, or an HTTPS tunnel during development).
 
 ## 🔑 Demo Account Credentials
 - **Email**: `demo@ayushgarden.org`

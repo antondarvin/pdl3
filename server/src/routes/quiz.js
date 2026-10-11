@@ -5,9 +5,9 @@ import { authenticate } from '../middleware/auth.js';
 const router = express.Router();
 
 // GET /api/quiz - fetch quiz questions
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const questions = QuizStore.getQuestions();
+    const questions = await QuizStore.getQuestions();
     res.json({
       count: questions.length,
       questions
@@ -19,7 +19,7 @@ router.get('/', (req, res) => {
 });
 
 // POST /api/quiz/results - save quiz score
-router.post('/results', authenticate, (req, res) => {
+router.post('/results', authenticate, async (req, res) => {
   try {
     const { score, totalQuestions, answers, category } = req.body;
 
@@ -27,7 +27,7 @@ router.post('/results', authenticate, (req, res) => {
       return res.status(400).json({ message: 'Score and totalQuestions are required.' });
     }
 
-    const savedResult = QuizStore.saveResult({
+    const savedResult = await QuizStore.saveResult({
       userId: req.user._id,
       score: Number(score),
       totalQuestions: Number(totalQuestions),
@@ -36,7 +36,7 @@ router.post('/results', authenticate, (req, res) => {
     });
 
     const percentage = Math.round((Number(score) / Number(totalQuestions)) * 100);
-    ActivityStore.log(
+    await ActivityStore.log(
       req.user._id,
       'TAKE_QUIZ',
       `Completed AYUSH Quiz: Scored ${score}/${totalQuestions} (${percentage}%)`

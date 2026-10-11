@@ -4,11 +4,11 @@ import { PlantStore } from '../store/index.js';
 const router = express.Router();
 
 // GET /api/plants
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { search, ayushSystem, sunlight, watering, indoorOutdoor, maintenanceLevel, sort } = req.query;
 
-    const plants = PlantStore.getAll({
+    const plants = await PlantStore.getAll({
       search,
       ayushSystem,
       sunlight,
@@ -29,9 +29,9 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/plants/:id
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const plant = PlantStore.getById(req.params.id);
+    const plant = await PlantStore.getById(req.params.id);
     if (!plant) {
       return res.status(404).json({ message: 'Medicinal plant not found.' });
     }

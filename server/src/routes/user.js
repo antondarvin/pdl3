@@ -15,8 +15,8 @@ const router = express.Router();
 router.use(authenticate);
 
 // GET /api/user/profile
-router.get('/profile', (req, res) => {
-  const user = UserStore.findById(req.user._id);
+router.get('/profile', async (req, res) => {
+  const user = await UserStore.findById(req.user._id);
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
@@ -28,7 +28,8 @@ router.get('/profile', (req, res) => {
 router.put('/profile', async (req, res) => {
   try {
     const { name, avatar, notificationPreferences, currentPassword, newPassword } = req.body;
-    const user = UserStore.findById(req.user._id);
+    const user = await UserStore.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     const updates = {};
     if (name) updates.name = name.trim();
@@ -51,10 +52,11 @@ router.put('/profile', async (req, res) => {
       updates.password = await bcrypt.hash(newPassword, salt);
     }
 
-    const updated = UserStore.update(req.user._id, updates);
+    const updated = await UserStore.update(req.user._id, updates);
+    if (!updated) return res.status(404).json({ message: 'User not found' });
     const { password: _, ...safeUser } = updated;
 
-    ActivityStore.log(req.user._id, 'PROFILE_UPDATE', 'Updated account settings');
+    await ActivityStore.log(req.user._id, 'PROFILE_UPDATE', 'Updated account settings');
 
     res.json({
       message: 'Profile updated successfully!',
@@ -67,9 +69,9 @@ router.put('/profile', async (req, res) => {
 });
 
 // GET /api/user/saved-plants
-router.get('/saved-plants', (req, res) => {
+router.get('/saved-plants', async (req, res) => {
   try {
-    const saved = SavedPlantStore.getByUser(req.user._id);
+    const saved = await SavedPlantStore.getByUser(req.user._id);
     res.json(saved);
   } catch (error) {
     console.error('Error fetching saved plants:', error);
@@ -78,21 +80,21 @@ router.get('/saved-plants', (req, res) => {
 });
 
 // POST /api/user/saved-plants
-router.post('/saved-plants', (req, res) => {
+router.post('/saved-plants', async (req, res) => {
   try {
     const { plantId } = req.body;
     if (!plantId) {
       return res.status(400).json({ message: 'Plant ID is required.' });
     }
 
-    const plant = PlantStore.getById(plantId);
+    const plant = await PlantStore.getById(plantId);
     if (!plant) {
       return res.status(404).json({ message: 'Plant not found.' });
     }
 
-    const saved = SavedPlantStore.save(req.user._id, plant._id);
+    const saved = await SavedPlantStore.save(req.user._id, plant._id);
 
-    ActivityStore.log(req.user._id, 'SAVE_PLANT', `Saved ${plant.name} to personal collection`);
+    await ActivityStore.log(req.user._id, 'SAVE_PLANT', `Saved ${plant.name} to personal collection`);
 
     res.status(201).json({
       message: `${plant.name} added to your saved plants!`,
@@ -105,15 +107,15 @@ router.post('/saved-plants', (req, res) => {
 });
 
 // DELETE /api/user/saved-plants/:id
-router.delete('/saved-plants/:id', (req, res) => {
+router.delete('/saved-plants/:id', async (req, res) => {
   try {
     const plantId = req.params.id;
-    const removed = SavedPlantStore.remove(req.user._id, plantId);
+    const removed = await SavedPlantStore.remove(req.user._id, plantId);
     if (!removed) {
       return res.status(404).json({ message: 'Saved plant item not found.' });
     }
 
-    ActivityStore.log(req.user._id, 'UNSAVE_PLANT', `Removed a plant from saved collection`);
+    await ActivityStore.log(req.user._id, 'UNSAVE_PLANT', `Removed a plant from saved collection`);
 
     res.json({ message: 'Plant removed from saved list.' });
   } catch (error) {
@@ -123,11 +125,13 @@ router.delete('/saved-plants/:id', (req, res) => {
 });
 
 // GET /api/user/stats
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
-    const savedCount = SavedPlantStore.getByUser(req.user._id).length;
-    const gardenCount = GardenStore.getByUser(req.user._id).length;
-    const quizResults = QuizStore.getResultsByUser(req.user._id);
+    const [savedCount, gardenCount, quizResults] = await Promise.all([
+      SavedPlantStore.countByUser(req.user._id),
+      GardenStore.countByUser(req.user._id),
+      QuizStore.getResultsByUser(req.user._id)
+    ]);
 
     let totalScore = 0;
     let totalPossible = 0;
@@ -153,9 +157,9 @@ router.get('/stats', (req, res) => {
 });
 
 // GET /api/user/activity
-router.get('/activity', (req, res) => {
+router.get('/activity', async (req, res) => {
   try {
-    const activities = ActivityStore.getByUser(req.user._id, 15);
+    const activities = await ActivityStore.getByUser(req.user._id, 15);
     res.json(activities);
   } catch (error) {
     console.error('Error getting user activity:', error);
@@ -164,9 +168,9 @@ router.get('/activity', (req, res) => {
 });
 
 // DELETE /api/user/account - delete user account
-router.delete('/account', (req, res) => {
+router.delete('/account', async (req, res) => {
   try {
-    const success = UserStore.delete(req.user._id);
+    const success = await UserStore.delete(req.user._id);
     if (!success) {
       return res.status(404).json({ message: 'User account could not be found.' });
     }

@@ -4,13 +4,41 @@ import { GardenStore, ActivityStore } from '../store/index.js';
 
 const router = express.Router();
 
+const clamp = (n, lo, hi, d) => (Number.isFinite(Number(n)) ? Math.min(hi, Math.max(lo, Number(n))) : d);
+
+// Normalise placed plants so both MongoDB validation and the JSON store get clean data.
+function sanitizePlants(plants) {
+  if (!Array.isArray(plants)) return [];
+  return plants
+    .filter((p) => p && p.plantId && p.name)
+    .slice(0, 200)
+    .map((p, i) => ({
+      id: String(p.id || `placed_${Date.now()}_${i}`),
+      plantId: String(p.plantId),
+      name: String(p.name),
+      scientificName: p.scientificName || '',
+      image: p.image || '',
+      x: clamp(p.x, 0, 100, 50),
+      y: clamp(p.y, 0, 100, 50),
+      rotation: clamp(p.rotation, -360, 720, 0),
+      scale: clamp(p.scale, 0.1, 5, 1),
+      model3D: p.model3D,
+      potSizeFt: clamp(p.potSizeFt, 0.1, 10, 1),
+      spacingRequiredFt: clamp(p.spacingRequiredFt, 0, 20, 1.5),
+      ...(p.plantHeightFt !== undefined && { plantHeightFt: clamp(p.plantHeightFt, 0, 50, 2) }),
+      ...(Number.isFinite(p.worldX) && { worldX: p.worldX }),
+      ...(Number.isFinite(p.worldZ) && { worldZ: p.worldZ }),
+      ...(['planner', 'ar-webxr', 'ar-camera', '3d'].includes(p.placedVia) && { placedVia: p.placedVia })
+    }));
+}
+
 // Apply auth to all garden routes
 router.use(authenticate);
 
 // GET /api/gardens - get current user's gardens
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const gardens = GardenStore.getByUser(req.user._id);
+    const gardens = await GardenStore.getByUser(req.user._id);
     res.json(gardens);
   } catch (error) {
     console.error('Error fetching gardens:', error);
@@ -19,11 +47,11 @@ router.get('/', (req, res) => {
 });
 
 // POST /api/gardens - create new garden
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { gardenName, roomType, length, width, direction, plants, notes, unit, totalSquareFeet } = req.body;
 
-    if (!gardenName || length === undefined || width === undefined) {
+    if (!gardenName || !Number.isFinite(Number(length)) || !Number.isFinite(Number(width))) {
       return res.status(400).json({ message: 'Garden name, length, and width are required.' });
     }
 
@@ -34,20 +62,20 @@ router.post('/', (req, res) => {
       ? Number(totalSquareFeet)
       : (gardenUnit === 'm' ? Math.round(numLength * numWidth * 10.7639 * 10) / 10 : Math.round(numLength * numWidth * 10) / 10);
 
-    const newGarden = GardenStore.create({
+    const newGarden = await GardenStore.create({
       userId: req.user._id,
       gardenName: gardenName.trim(),
       roomType: roomType || 'Balcony',
       length: numLength,
       width: numWidth,
       direction: direction || 'North-East',
-      plants: Array.isArray(plants) ? plants : [],
+      plants: sanitizePlants(plants),
       notes: notes || '',
       unit: gardenUnit,
       totalSquareFeet: calcTotalSqFt
     });
 
-    ActivityStore.log(
+    await ActivityStore.log(
       req.user._id,
       'PLAN_GARDEN',
       `Designed garden layout "${newGarden.gardenName}" with ${newGarden.plants.length} plants`
@@ -64,9 +92,9 @@ router.post('/', (req, res) => {
 });
 
 // GET /api/gardens/:id
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const garden = GardenStore.getById(req.params.id, req.user._id);
+    const garden = await GardenStore.getById(req.params.id, req.user._id);
     if (!garden) {
       return res.status(404).json({ message: 'Garden design not found.' });
     }
@@ -78,7 +106,7 @@ router.get('/:id', (req, res) => {
 });
 
 // PUT /api/gardens/:id
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { gardenName, roomType, length, width, direction, plants, notes, unit, totalSquareFeet } = req.body;
 
@@ -91,13 +119,13 @@ router.put('/:id', (req, res) => {
       calcTotalSqFt = (gardenUnit === 'm' ? Math.round(numLength * numWidth * 10.7639 * 10) / 10 : Math.round(numLength * numWidth * 10) / 10);
     }
 
-    const updated = GardenStore.update(req.params.id, req.user._id, {
+    const updated = await GardenStore.update(req.params.id, req.user._id, {
       ...(gardenName && { gardenName: gardenName.trim() }),
       ...(roomType && { roomType }),
       ...(numLength !== undefined && { length: numLength }),
       ...(numWidth !== undefined && { width: numWidth }),
       ...(direction && { direction }),
-      ...(plants !== undefined && { plants: Array.isArray(plants) ? plants : [] }),
+      ...(plants !== undefined && { plants: sanitizePlants(plants) }),
       ...(notes !== undefined && { notes }),
       ...(gardenUnit && { unit: gardenUnit }),
       ...(calcTotalSqFt !== undefined && { totalSquareFeet: calcTotalSqFt })
@@ -107,7 +135,7 @@ router.put('/:id', (req, res) => {
       return res.status(404).json({ message: 'Garden not found or unauthorized.' });
     }
 
-    ActivityStore.log(
+    await ActivityStore.log(
       req.user._id,
       'UPDATE_GARDEN',
       `Updated layout "${updated.gardenName}"`
@@ -124,14 +152,14 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /api/gardens/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const success = GardenStore.delete(req.params.id, req.user._id);
+    const success = await GardenStore.delete(req.params.id, req.user._id);
     if (!success) {
       return res.status(404).json({ message: 'Garden not found or already deleted.' });
     }
 
-    ActivityStore.log(req.user._id, 'DELETE_GARDEN', `Removed a garden layout`);
+    await ActivityStore.log(req.user._id, 'DELETE_GARDEN', `Removed a garden layout`);
 
     res.json({ message: 'Garden design removed successfully.' });
   } catch (error) {

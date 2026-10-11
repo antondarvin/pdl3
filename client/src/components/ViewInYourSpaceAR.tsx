@@ -1,45 +1,42 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Plant, PlacedPlant } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { createProceduralPlantMesh } from '../utils/botanical3DModels';
-import { detectARCapabilities, ARCapabilityReport } from '../utils/arCapabilities';
+import { detectARCapabilities, ARCapabilityReport, requestOrientationPermission } from '../utils/arCapabilities';
 import {
   filterPlantsByVastuDirection,
+  isPlantVastuCompatible,
   normalizeVastuDirection,
   VASTU_DIRECTIONS,
-  getVastuDirectionMetadata
+  getVastuDirectionMetadata,
 } from '../utils/vastuRules';
+import { evaluatePlacementSuitability } from '../utils/plantPlacementDetector';
 import {
-  evaluatePlacementSuitability,
-  sampleVideoLuminance,
-  SpotSuitabilityResult
-} from '../utils/plantPlacementDetector';
-import { 
-  Camera, 
-  CameraOff, 
-  RotateCw, 
-  ZoomIn, 
-  ZoomOut, 
-  Move, 
-  Check, 
-  X, 
-  Sparkles, 
-  Save, 
-  Compass, 
-  Sun, 
-  Droplets, 
-  Ruler, 
-  Info, 
-  ChevronDown, 
-  ChevronUp, 
-  RefreshCw,
-  Sliders,
-  Layers,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowLeft
+  FT_TO_M,
+  M_TO_FT,
+  DIRECTION_DEG,
+  PlacedItem,
+  GardenFrame,
+  PlantModelCache,
+  FrameAnalyzer,
+  orientationToQuaternion,
+  cameraBearing,
+  headingToDirection,
+  normDeg,
+  angleDelta,
+  zoneOf,
+  isInsideGarden,
+  toLayoutPercent,
+  findSpacingConflicts,
+  crowdingAt,
+  findBestSpot,
+  spacingFt,
+  estimatePlantHeightM,
+} from '../utils/arPlacementEngine';
+import {
+  ArrowLeft, Compass, RotateCw, RotateCcw, ZoomIn, ZoomOut, Ruler, Trash2, Copy, Move,
+  Save, Check, X, Sparkles, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Box, Camera, Smartphone, Wand2,
 } from 'lucide-react';
 
 interface ViewInYourSpaceARProps {
@@ -50,6 +47,24 @@ interface ViewInYourSpaceARProps {
   onSwitchTo3DPlanner?: (plant: Plant) => void;
 }
 
+type ViewMode = 'webxr' | 'camera' | '3d';
+type SpaceType = 'Indoor' | 'Balcony' | 'Terrace' | 'Outdoor';
+type SunLevel = 'High' | 'Medium' | 'Low';
+
+interface SpotInfo {
+  found: boolean; // a floor point is under the reticle
+  locked: boolean; // stable enough to place
+  zone: string; // Vastu zone of the garden, or 'Center'
+  inside: boolean; // inside the garden boundary
+  crowdedBy: string | null; // plant name that is too close
+  crowdGapCm: number;
+}
+
+const EMPTY_SPOT: SpotInfo = { found: false, locked: false, zone: 'Center', inside: true, crowdedBy: null, crowdGapCm: 0 };
+const SUN_TO_LUMA: Record<SunLevel, number> = { High: 185, Medium: 120, Low: 60 };
+const COLORS = { ok: 0x10b981, warn: 0xf59e0b, bad: 0xef4444, gold: 0xd4af37 };
+const uid = () => `placed_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
 export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
   initialPlant,
   catalogPlants,
@@ -59,1228 +74,1388 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
 }) => {
   const { user } = useAuth();
 
-  // Active Selected Plant
+  // ------------------------------------------------------------------ state
   const [activePlant, setActivePlant] = useState<Plant>(initialPlant);
-
-  // AR Capabilities & Mode State
   const [capabilities, setCapabilities] = useState<ARCapabilityReport | null>(null);
-  const [streamActive, setStreamActive] = useState<boolean>(false);
+  const [mode, setMode] = useState<ViewMode>('3d');
+  const [xrStarting, setXrStarting] = useState(false);
+  const [streamActive, setStreamActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
+  const [sensorsLive, setSensorsLive] = useState(false);
+  const [hasAbsoluteCompass, setHasAbsoluteCompass] = useState(false);
+  const [needsSensorPermission, setNeedsSensorPermission] = useState(false);
 
-  // Surface Detection & Placement State
-  const [surfaceDetected, setSurfaceDetected] = useState<boolean>(false);
-  const [isPlantPlaced, setIsPlantPlaced] = useState<boolean>(false);
-  const [scanningGuidance, setScanningGuidance] = useState<string>(
-    'Slowly move your phone across the floor or ground to detect surface planes.'
-  );
+  const [placed, setPlaced] = useState<PlacedItem[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [spot, setSpot] = useState<SpotInfo>(EMPTY_SPOT);
 
-  // Placed Plant Transform (Scale, Rotation, Position)
-  const [plantScale, setPlantScale] = useState<number>(1.0);
-  const [plantRotation, setPlantRotation] = useState<number>(0);
-  const [plantPosition, setPlantPosition] = useState<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: -1.5 });
+  const [spaceType, setSpaceType] = useState<SpaceType>('Balcony');
+  const [manualSun, setManualSun] = useState<SunLevel>('High');
+  const [cameraLuma, setCameraLuma] = useState<number | null>(null);
+  const [viewHeading, setViewHeading] = useState(0); // compass bearing the camera is facing
+  const [northOffset, setNorthOffset] = useState(0); // compass bearing of world -Z
+  const [gardenDims, setGardenDims] = useState({ length: 8, width: 6 }); // ft
+  const [gardenCenter, setGardenCenter] = useState<{ x: number; y: number; z: number } | null>(null);
+  const [phoneHeightM, setPhoneHeightM] = useState(1.3);
 
-  // Smart Environmental & Vastu Conditions (Editable)
-  const [spaceType, setSpaceType] = useState<'Indoor' | 'Balcony' | 'Terrace' | 'Outdoor'>('Balcony');
-  const [detectedSunlight, setDetectedSunlight] = useState<'High' | 'Medium' | 'Low'>('High');
-  const [compassHeading, setCompassHeading] = useState<number>(45); // 45° = North-East (Ishanya)
-  const [showConditionsEditor, setShowConditionsEditor] = useState<boolean>(false);
+  const [measuring, setMeasuring] = useState(false);
+  const [measurePts, setMeasurePts] = useState<THREE.Vector3[]>([]);
 
-  // Real-time camera luminance (0-255) sampled from live camera feed
-  const [cameraLuminance, setCameraLuminance] = useState<number>(150);
-  const [showPlacementRadar, setShowPlacementRadar] = useState<boolean>(true);
+  const [showCalibration, setShowCalibration] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [catalogDirection, setCatalogDirection] = useState('North-East');
+  const [toast, setToast] = useState<{ text: string; tone: 'ok' | 'warn' | 'bad' } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedGardenId, setSavedGardenId] = useState<string | null>(null);
+  const [dirtySinceSave, setDirtySinceSave] = useState(false);
 
-  // Garden Boundary & Measurement State
-  const [gardenDimensions, setGardenDimensions] = useState<{ length: number; width: number }>({ length: 10, width: 8 });
-  const [measuringMode, setMeasuringMode] = useState<boolean>(false);
-  const [measurePointA, setMeasurePointA] = useState<THREE.Vector3 | null>(null);
-  const [measurePointB, setMeasurePointB] = useState<THREE.Vector3 | null>(null);
-  const [measuredDistanceFt, setMeasuredDistanceFt] = useState<number | null>(null);
-
-  // UI Panels State
-  const [showPlantCatalog, setShowPlantCatalog] = useState<boolean>(false);
-  const [showSuggestionsDrawer, setShowSuggestionsDrawer] = useState<boolean>(true);
-  const [activeTabControl, setActiveTabControl] = useState<'transform' | 'measure' | 'info'>('transform');
-  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
-  // Three.js & WebXR References
+  // ------------------------------------------------------------------ refs (hot path, read inside the render loop)
+  const rootRef = useRef<HTMLDivElement>(null);
   const mountRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const uiRef = useRef<HTMLDivElement>(null);
+
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const reticleRef = useRef<THREE.Group | null>(null);
-  const plantGroupRef = useRef<THREE.Group | null>(null);
-  const boundaryBoxRef = useRef<THREE.LineSegments | null>(null);
-  const animFrameIdRef = useRef<number | null>(null);
+  const ghostRef = useRef<THREE.Group | null>(null);
+  const floorRef = useRef<THREE.Mesh | null>(null);
+  const gridRef = useRef<THREE.GridHelper | null>(null);
+  const shadowRef = useRef<THREE.Mesh | null>(null);
+  const boundaryRef = useRef<THREE.Group | null>(null);
+  const measureGroupRef = useRef<THREE.Group | null>(null);
+  const hemiRef = useRef<THREE.HemisphereLight | null>(null);
+  const plantLayerRef = useRef<THREE.Group | null>(null);
+  const meshesRef = useRef(new Map<string, { root: THREE.Group; ring: THREE.Mesh; plantKey: string }>());
+  const cacheRef = useRef<PlantModelCache | null>(null);
+  const analyzerRef = useRef<FrameAnalyzer | null>(null);
 
-  // WebXR Session Ref
+  const modeRef = useRef<ViewMode>('3d');
+  const placedRef = useRef<PlacedItem[]>([]);
+  const activePlantRef = useRef(activePlant);
+  const frameRef = useRef<GardenFrame | null>(null);
+  const northOffsetRef = useRef(0);
+  const phoneHeightRef = useRef(1.3);
+  const measuringRef = useRef(false);
+
+  const orientRef = useRef<{ alpha: number; beta: number; gamma: number } | null>(null);
+  const alphaOffsetRef = useRef<number | null>(null);
+  const absHeadingRef = useRef<number | null>(null);
+  const motionRef = useRef(99);
+  const lockSinceRef = useRef(0);
+  const spotPosRef = useRef<THREE.Vector3 | null>(null);
+  const spotKeyRef = useRef('');
+  const lastHeadingPushRef = useRef(0);
+
+  const orbitRef = useRef({ theta: 0.6, phi: 1.0, radius: 4.2, target: new THREE.Vector3(0, 0.2, 0) });
+  const lookRef = useRef({ yaw: 0, pitch: -0.6 }); // camera mode without sensors
+  const hoverRef = useRef<THREE.Vector3 | null>(null);
+  const pointerRef = useRef<{ x: number; y: number; t: number; id: string | null; dragging: boolean; kind: 'none' | 'orbit' | 'look' | 'plant' } | null>(null);
+
   const xrSessionRef = useRef<any>(null);
-  const hitTestSourceRef = useRef<any>(null);
+  const hitSourceRef = useRef<any>(null);
 
-  // Compass Heading calculation
-  const compassDirectionName = useMemo(() => {
-    const deg = (compassHeading + 360) % 360;
-    if (deg >= 22.5 && deg < 67.5) return 'North-East';
-    if (deg >= 67.5 && deg < 112.5) return 'East';
-    if (deg >= 112.5 && deg < 157.5) return 'South-East';
-    if (deg >= 157.5 && deg < 202.5) return 'South';
-    if (deg >= 202.5 && deg < 247.5) return 'South-West';
-    if (deg >= 247.5 && deg < 292.5) return 'West';
-    if (deg >= 292.5 && deg < 337.5) return 'North-West';
-    return 'North';
-  }, [compassHeading]);
+  // keep refs in sync with state
+  useEffect(() => { placedRef.current = placed; }, [placed]);
+  useEffect(() => { activePlantRef.current = activePlant; }, [activePlant]);
+  useEffect(() => { northOffsetRef.current = northOffset; }, [northOffset]);
+  useEffect(() => { phoneHeightRef.current = phoneHeightM; }, [phoneHeightM]);
+  useEffect(() => { measuringRef.current = measuring; }, [measuring]);
+  useEffect(() => { modeRef.current = mode; }, [mode]);
 
-  // Real-world plant height in ft
-  const estimatedPhysicalHeightFt = useMemo(() => {
-    const baseHeight = activePlant.spaceRequired?.includes('Small') ? 1.5 : 2.5;
-    return (baseHeight * plantScale).toFixed(1);
-  }, [activePlant, plantScale]);
+  const frame: GardenFrame = useMemo(() => {
+    const c = gardenCenter || { x: 0, y: 0, z: 0 };
+    return {
+      center: new THREE.Vector3(c.x, c.y, c.z),
+      widthM: gardenDims.width * FT_TO_M,
+      lengthM: gardenDims.length * FT_TO_M,
+      northOffsetDeg: northOffset,
+    };
+  }, [gardenCenter, gardenDims, northOffset]);
+  useEffect(() => { frameRef.current = frame; }, [frame]);
 
-  // Vastu Catalog Direction Filter State
-  const [selectedCatalogDirection, setSelectedCatalogDirection] = useState<string>(compassDirectionName);
-
-  useEffect(() => {
-    setSelectedCatalogDirection(compassDirectionName);
-  }, [compassDirectionName]);
-
-  const canonicalCatalogDir = normalizeVastuDirection(selectedCatalogDirection);
-  const catalogDirMeta = getVastuDirectionMetadata(canonicalCatalogDir);
-
-  const vastuFilteredCatalogPlants = useMemo(() => {
-    return filterPlantsByVastuDirection(catalogPlants, canonicalCatalogDir);
-  }, [catalogPlants, canonicalCatalogDir]);
-
-  // Real-time Placement Suitability Evaluation
-  const placementSuitability: SpotSuitabilityResult = useMemo(() => {
-    return evaluatePlacementSuitability(activePlant, {
-      compassHeading,
-      lightLuma: cameraLuminance,
-      manualSunlight: detectedSunlight,
-      spaceType,
-    });
-  }, [activePlant, compassHeading, cameraLuminance, detectedSunlight, spaceType]);
-
-  // Periodically sample camera video luminance
-  useEffect(() => {
-    if (!streamActive) return;
-    const interval = setInterval(() => {
-      if (videoRef.current && videoRef.current.readyState >= 2) {
-        const luma = sampleVideoLuminance(videoRef.current);
-        setCameraLuminance(luma);
-      }
-    }, 450);
-    return () => clearInterval(interval);
-  }, [streamActive]);
-
-  // Smart suggestions tailored to current scanned space - STRICT VASTU FILTERING
-  const smartSuggestions = useMemo(() => {
-    const vastuCompatiblePlants = filterPlantsByVastuDirection(catalogPlants, compassDirectionName);
-
-    return vastuCompatiblePlants.map((plant) => {
-      let score = 0;
-      const reasons: string[] = [];
-
-      // Vastu alignment guaranteed by filter
-      score += 40;
-      reasons.push(`Auspicious for traditional ${compassDirectionName} quadrant`);
-
-      // Sunlight check
-      const pSun = plant.sunlight.toLowerCase();
-      if (detectedSunlight === 'High' && (pSun.includes('high') || pSun.includes('full'))) {
-        score += 35;
-        reasons.push(`Direct sun needs match detected environment`);
-      } else if (detectedSunlight === 'Medium' && (pSun.includes('medium') || pSun.includes('partial'))) {
-        score += 35;
-        reasons.push(`Filtered light matches space`);
-      } else if (detectedSunlight === 'Low' && (pSun.includes('low') || pSun.includes('shade') || pSun.includes('indoor'))) {
-        score += 35;
-        reasons.push(`Thrives in low light conditions`);
-      } else {
-        score += 15;
-      }
-
-      // Space check
-      if (spaceType === 'Indoor' && plant.indoorOutdoor.toLowerCase().includes('indoor')) {
-        score += 20;
-        reasons.push('Excellent indoor air-purifier');
-      } else if (spaceType !== 'Indoor') {
-        score += 15;
-        reasons.push('Loves fresh open-air circulation');
-      }
-
-      return {
-        plant,
-        score: Math.min(99, score),
-        reasons,
-      };
-    }).sort((a, b) => b.score - a.score);
-  }, [catalogPlants, compassDirectionName, detectedSunlight, spaceType]);
-
-  // 1. Detect capabilities on mount
-  useEffect(() => {
-    async function initCapabilities() {
-      const report = await detectARCapabilities();
-      setCapabilities(report);
-
-      // Start camera if device has camera
-      if (report.hasCamera) {
-        startCameraStream();
-      }
-
-      // Listen for Device Orientation for compass & spatial tilt
-      const handleOrientation = (e: DeviceOrientationEvent) => {
-        if (e.alpha !== null) {
-          setCompassHeading(Math.round(e.alpha));
-        }
-      };
-
-      if (typeof window !== 'undefined' && window.addEventListener) {
-        window.addEventListener('deviceorientation', handleOrientation, true);
-      }
-
-      return () => {
-        if (typeof window !== 'undefined' && window.removeEventListener) {
-          window.removeEventListener('deviceorientation', handleOrientation, true);
-        }
-      };
-    }
-
-    initCapabilities();
+  const toastTimerRef = useRef<number | undefined>(undefined);
+  const showToast = useCallback((text: string, tone: 'ok' | 'warn' | 'bad' = 'ok') => {
+    setToast({ text, tone });
+    window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 2800);
   }, []);
 
-  // 2. Camera Stream Manager
-  const startCameraStream = async (facing: 'environment' | 'user' = cameraFacing) => {
-    setCameraError(null);
-    stopCameraStream();
+  // ------------------------------------------------------------------ derived
+  const conflicts = useMemo(() => findSpacingConflicts(placed), [placed]);
+  const selected = placed.find((p) => p.id === selectedId) || null;
+  const focusPlant = selected?.plant || activePlant;
+  const lightLuma = cameraLuma ?? SUN_TO_LUMA[manualSun];
+  const spotBearing = spot.found && spot.zone !== 'Center' ? DIRECTION_DEG[spot.zone] : viewHeading;
 
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        const isHttpNonLocal = typeof window !== 'undefined' && 
-          window.location.protocol === 'http:' && 
-          window.location.hostname !== 'localhost' && 
-          window.location.hostname !== '127.0.0.1';
-        if (isHttpNonLocal) {
-          throw new Error('Mobile browsers restrict camera to HTTPS. Deploy to Vercel (free HTTPS) or use an HTTPS tunnel to activate live camera.');
-        }
-        throw new Error('Camera hardware access is unavailable on this browser.');
-      }
+  const suitability = useMemo(
+    () =>
+      evaluatePlacementSuitability(focusPlant, {
+        compassHeading: spotBearing,
+        lightLuma,
+        manualSunlight: manualSun,
+        spaceType,
+      }),
+    [focusPlant, spotBearing, lightLuma, manualSun, spaceType]
+  );
 
-      let stream: MediaStream | null = null;
-      // Tier 1: Optimal mobile constraints (1280x720)
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: { ideal: facing },
-            width: { ideal: 1280, max: 1920 },
-            height: { ideal: 720, max: 1080 }
-          },
-          audio: false,
-        });
-      } catch (tier1Err) {
-        // Tier 2: Flexible facingMode
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: facing },
-            audio: false,
-          });
-        } catch (tier2Err) {
-          // Tier 3: Any video track
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false,
-          });
-        }
-      }
+  const spotZoneMatch = spot.zone !== 'Center' && isPlantVastuCompatible(activePlant, spot.zone);
+  const spotStatus: 'none' | 'ok' | 'warn' | 'bad' = !spot.found
+    ? 'none'
+    : spot.crowdedBy
+    ? 'bad'
+    : !spot.inside || !spotZoneMatch || !suitability.lightMatch
+    ? 'warn'
+    : 'ok';
 
-      if (videoRef.current && stream) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('webkit-playsinline', 'true');
-        videoRef.current.muted = true;
-        try {
-          await videoRef.current.play();
-        } catch (playErr) {
-          console.warn('Autoplay prevented on mobile:', playErr);
-        }
-      }
-      setStreamActive(true);
-    } catch (err: any) {
-      console.warn('Camera access denied or device not found:', err);
-      const isHttpNonLocal = typeof window !== 'undefined' && 
-        window.location.protocol === 'http:' && 
-        window.location.hostname !== 'localhost' && 
-        window.location.hostname !== '127.0.0.1';
-      if (isHttpNonLocal) {
-        setCameraError('Mobile browsers block camera on HTTP. Deploy to Vercel for live camera, or inspect in our 3D space!');
-      } else {
-        setCameraError(err.message || 'Camera access unavailable. Using optical spatial tracker.');
-      }
-      setStreamActive(false);
-    }
-  };
+  const smartSuggestions = useMemo(() => {
+    const zone = spot.found && spot.zone !== 'Center' ? spot.zone : headingToDirection(viewHeading);
+    const lightTier: SunLevel = lightLuma >= 160 ? 'High' : lightLuma <= 85 ? 'Low' : manualSun;
+    return filterPlantsByVastuDirection(catalogPlants, zone)
+      .map((plant) => {
+        const sun = plant.sunlight.toLowerCase();
+        let score = 40;
+        if (lightTier === 'High' ? /high|full/.test(sun) : lightTier === 'Medium' ? /medium|partial/.test(sun) : /low|shade|indoor/.test(sun)) score += 35;
+        else score += 12;
+        const io = plant.indoorOutdoor.toLowerCase();
+        score += spaceType === 'Indoor' ? (io.includes('indoor') || io.includes('both') ? 20 : 5) : 18;
+        return { plant, score: Math.min(99, score), zone };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+  }, [catalogPlants, spot.found, spot.zone, viewHeading, lightLuma, manualSun, spaceType]);
 
-  const stopCameraStream = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
+  const canonicalCatalogDir = normalizeVastuDirection(catalogDirection);
+  const catalogDirMeta = getVastuDirectionMetadata(canonicalCatalogDir);
+  const catalogList = useMemo(() => filterPlantsByVastuDirection(catalogPlants, canonicalCatalogDir), [catalogPlants, canonicalCatalogDir]);
+
+  const measuredFt = measurePts.length === 2 ? Math.round(measurePts[0].distanceTo(measurePts[1]) * M_TO_FT * 10) / 10 : null;
+
+  // ------------------------------------------------------------------ camera stream
+  const stopCamera = useCallback(() => {
+    const v = videoRef.current;
+    if (v?.srcObject) {
+      (v.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
+      v.srcObject = null;
     }
     setStreamActive(false);
+  }, []);
+
+  const startCamera = useCallback(async (): Promise<boolean> => {
+    setCameraError(null);
+    stopCamera();
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        const insecure = location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname);
+        throw new Error(insecure ? 'Camera needs HTTPS on mobile (deploy to Vercel or use an HTTPS tunnel).' : 'Camera not available in this browser.');
+      }
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+      const v = videoRef.current;
+      if (!v) { stream.getTracks().forEach((t) => t.stop()); return false; }
+      v.srcObject = stream;
+      v.muted = true;
+      v.setAttribute('playsinline', 'true');
+      await v.play().catch(() => undefined);
+      setStreamActive(true);
+      return true;
+    } catch (err: any) {
+      setCameraError(err?.message || 'Camera permission denied.');
+      setStreamActive(false);
+      return false;
+    }
+  }, [stopCamera]);
+
+  // ------------------------------------------------------------------ orientation sensors (compass + 3-DoF camera tracking)
+  useEffect(() => {
+    let smoothed: number | null = null;
+    const pushAbs = (h: number) => {
+      smoothed = smoothed === null ? h : normDeg(smoothed + angleDelta(smoothed, h) * 0.2);
+      absHeadingRef.current = smoothed;
+      setHasAbsoluteCompass(true);
+    };
+    const onOrient = (e: DeviceOrientationEvent) => {
+      if (e.alpha === null || e.beta === null || e.gamma === null) return;
+      orientRef.current = { alpha: e.alpha, beta: e.beta, gamma: e.gamma };
+      const ios = (e as any).webkitCompassHeading;
+      if (typeof ios === 'number' && !Number.isNaN(ios)) pushAbs(ios);
+      else if (e.absolute) pushAbs(360 - e.alpha);
+      setSensorsLive(true);
+    };
+    const onAbs = (e: DeviceOrientationEvent) => {
+      if (e.alpha !== null) pushAbs(360 - e.alpha);
+    };
+    window.addEventListener('deviceorientation', onOrient, true);
+    window.addEventListener('deviceorientationabsolute' as any, onAbs, true);
+    setNeedsSensorPermission(typeof (DeviceOrientationEvent as any)?.requestPermission === 'function');
+    return () => {
+      window.removeEventListener('deviceorientation', onOrient, true);
+      window.removeEventListener('deviceorientationabsolute' as any, onAbs, true);
+    };
+  }, []);
+
+  const enableSensors = async () => {
+    const ok = await requestOrientationPermission();
+    setNeedsSensorPermission(!ok);
+    if (!ok) showToast('Motion sensors were not allowed — drag to look around instead.', 'warn');
   };
 
-  // 3. Initialize Three.js AR Scene
+  // ------------------------------------------------------------------ capabilities → initial mode
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const report = await detectARCapabilities();
+      if (cancelled) return;
+      setCapabilities(report);
+      if (report.isMobile && report.hasCamera) {
+        const ok = await startCamera();
+        if (!cancelled) setMode(ok ? 'camera' : '3d');
+      } else {
+        setMode('3d');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [startCamera]);
+
+  // brightness + motion sampling from the live camera
+  useEffect(() => {
+    if (!streamActive || mode !== 'camera') { motionRef.current = 99; return; }
+    analyzerRef.current = analyzerRef.current || new FrameAnalyzer();
+    const id = window.setInterval(() => {
+      const r = analyzerRef.current!.sample(videoRef.current);
+      if (!r) return;
+      motionRef.current = r.motion;
+      setCameraLuma((prev) => (prev === null || Math.abs(prev - r.luma) > 4 ? r.luma : prev));
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [streamActive, mode]);
+
+  // ------------------------------------------------------------------ Three.js scene (created once)
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
 
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || window.innerHeight;
-
-    // Scene
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
-
-    // Camera
-    const camera = new THREE.PerspectiveCamera(65, width / height, 0.05, 100);
-    camera.position.set(0, 1.2, 0); // ~eye level height in meters
-    cameraRef.current = camera;
-
-    // WebGL Renderer with Alpha transparent background for camera pass-through
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.xr.enabled = true;
+    container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    const camera = new THREE.PerspectiveCamera(60, w / h, 0.03, 60);
+    cameraRef.current = camera;
 
-    // Realistic Lighting
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
-    hemiLight.position.set(0, 20, 0);
-    scene.add(hemiLight);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x445544, 1.0);
+    scene.add(hemi);
+    hemiRef.current = hemi;
+    const sun = new THREE.DirectionalLight(0xfff3e0, 1.8);
+    sun.position.set(2.5, 5, 2);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.left = -5; sun.shadow.camera.right = 5;
+    sun.shadow.camera.top = 5; sun.shadow.camera.bottom = -5;
+    sun.shadow.bias = -0.0008;
+    scene.add(sun, sun.target);
 
-    const sunLight = new THREE.DirectionalLight(0xfff5ea, 1.6);
-    sunLight.position.set(2, 5, 3);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
-    sunLight.shadow.bias = -0.001;
-    scene.add(sunLight);
+    // floor (3D mode) + shadow catcher (AR modes: plants cast shadows onto the real floor)
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: 0x0e281e, roughness: 0.95 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    floorRef.current = floor;
+    const grid = new THREE.GridHelper(30, 100, 0xd4af37, 0x1d4a37);
+    (grid.material as THREE.Material).transparent = true;
+    (grid.material as THREE.Material).opacity = 0.25;
+    grid.position.y = 0.001;
+    scene.add(grid);
+    gridRef.current = grid;
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.ShadowMaterial({ opacity: 0.35 }));
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.receiveShadow = true;
+    shadow.position.y = 0.002;
+    scene.add(shadow);
+    shadowRef.current = shadow;
 
-    const ambientLight = new THREE.AmbientLight(0xdcfce7, 0.4);
-    scene.add(ambientLight);
-
-    // Dynamic Reticle Group (Surface Placement Indicator Ring)
+    // reticle: outer ring (status colour) + spacing ring (plant's clearance radius) + heading arrow
     const reticle = new THREE.Group();
-    reticle.name = 'reticle';
-
-    // Ring Outer
-    const ringGeo = new THREE.RingGeometry(0.22, 0.25, 32);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x2563eb, // Bright Blue
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.9,
-    });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.11, 0.135, 48), new THREE.MeshBasicMaterial({ color: COLORS.gold, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthTest: false }));
     ring.rotation.x = -Math.PI / 2;
-    reticle.add(ring);
-
-    // Inner glowing pulse disk
-    const diskGeo = new THREE.CircleGeometry(0.18, 32);
-    const diskMat = new THREE.MeshBasicMaterial({
-      color: 0x3b82f6,
-      transparent: true,
-      opacity: 0.25,
-      side: THREE.DoubleSide,
-    });
-    const disk = new THREE.Mesh(diskGeo, diskMat);
-    disk.rotation.x = -Math.PI / 2;
-    reticle.add(disk);
-
-    // Direction arrow pointer on reticle
-    const arrowGeo = new THREE.ConeGeometry(0.04, 0.12, 16);
-    const arrowMat = new THREE.MeshBasicMaterial({ color: 0xf97316 }); // Vibrant Orange
-    const arrow = new THREE.Mesh(arrowGeo, arrowMat);
-    arrow.rotation.x = Math.PI / 2;
-    arrow.position.set(0, 0, -0.22);
-    reticle.add(arrow);
-
-    // Position reticle on virtual ground plane initially
-    reticle.position.set(0, -0.6, -1.5);
+    const spacingRing = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 64), new THREE.MeshBasicMaterial({ color: COLORS.gold, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthTest: false }));
+    spacingRing.rotation.x = -Math.PI / 2;
+    spacingRing.name = 'spacing';
+    const dot = new THREE.Mesh(new THREE.CircleGeometry(0.02, 16), new THREE.MeshBasicMaterial({ color: 0xffffff, depthTest: false }));
+    dot.rotation.x = -Math.PI / 2;
+    reticle.add(ring, spacingRing, dot);
+    reticle.renderOrder = 10;
+    reticle.visible = false;
     scene.add(reticle);
     reticleRef.current = reticle;
 
-    // Plant 3D Model Group
-    const plantGroup = new THREE.Group();
-    plantGroup.name = 'placedPlantGroup';
-    scene.add(plantGroup);
-    plantGroupRef.current = plantGroup;
+    const plantLayer = new THREE.Group();
+    scene.add(plantLayer);
+    plantLayerRef.current = plantLayer;
 
-    // Garden Boundary Box Wireframe
-    const boxGeo = new THREE.BoxGeometry(gardenDimensions.width * 0.3048, 0.05, gardenDimensions.length * 0.3048);
-    const edges = new THREE.EdgesGeometry(boxGeo);
-    const boundaryLine = new THREE.LineSegments(
-      edges,
-      new THREE.LineBasicMaterial({ color: 0x2563eb, transparent: true, opacity: 0.4 })
-    );
-    boundaryLine.position.set(0, -0.6, -1.5);
-    scene.add(boundaryLine);
-    boundaryBoxRef.current = boundaryLine;
+    const boundary = new THREE.Group();
+    scene.add(boundary);
+    boundaryRef.current = boundary;
 
-    // Build the initial 3D model
-    updatePlantModelMesh(activePlant, plantScale, plantRotation);
+    const measureGroup = new THREE.Group();
+    scene.add(measureGroup);
+    measureGroupRef.current = measureGroup;
 
-    // Render loop
-    let clock = new THREE.Clock();
-    const animate = () => {
-      animFrameIdRef.current = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+    cacheRef.current = new PlantModelCache();
 
-      // Animate reticle breathing pulse
-      if (reticleRef.current) {
-        const pulse = 1 + Math.sin(elapsed * 4) * 0.06;
-        reticleRef.current.scale.set(pulse, 1, pulse);
-      }
-
-      // Gentle foliage breeze animation
-      if (plantGroupRef.current) {
-        const foliage = plantGroupRef.current.getObjectByName('foliage');
-        if (foliage) {
-          for (let i = 0; i < foliage.children.length; i++) {
-            const leaf = foliage.children[i];
-            leaf.rotation.z += Math.sin(elapsed * 2.5 + i) * 0.0006;
-          }
-        }
-      }
-
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    // Resize Handler
-    const handleResize = () => {
-      if (!container || !camera || !renderer) return;
-      const newW = container.clientWidth || window.innerWidth;
-      const newH = container.clientHeight || window.innerHeight;
-      camera.aspect = newW / newH;
+    const ro = new ResizeObserver(() => {
+      if (renderer.xr.isPresenting) return;
+      const nw = container.clientWidth || window.innerWidth;
+      const nh = container.clientHeight || window.innerHeight;
+      camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
-      renderer.setSize(newW, newH);
-    };
+      renderer.setSize(nw, nh);
+    });
+    ro.observe(container);
 
-    window.addEventListener('resize', handleResize);
-
-    // Simulate surface detection lock after 1.5 seconds of camera scanning
-    const detectionTimer = setTimeout(() => {
-      setSurfaceDetected(true);
-      setScanningGuidance('Surface detected! Tap screen or press Place Plant to anchor.');
-    }, 1200);
+    renderer.setAnimationLoop(renderLoop);
 
     return () => {
-      clearTimeout(detectionTimer);
-      if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
-      window.removeEventListener('resize', handleResize);
+      renderer.setAnimationLoop(null);
+      ro.disconnect();
+      xrSessionRef.current?.end?.().catch(() => undefined);
+      meshesRef.current.forEach(({ ring }) => (ring.material as THREE.Material).dispose());
+      meshesRef.current.clear();
+      disposeGhost();
+      cacheRef.current?.dispose();
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh || (o as any).isLine) {
+          m.geometry?.dispose();
+          const mats = Array.isArray(m.material) ? m.material : [m.material];
+          mats.forEach((mat) => mat?.dispose());
+        }
+      });
       renderer.dispose();
-      stopCameraStream();
+      renderer.domElement.remove();
+      stopCamera();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update 3D plant model when activePlant, plantScale, or plantRotation changes
-  const updatePlantModelMesh = (plant: Plant, scale: number, rotationDeg: number) => {
-    if (!plantGroupRef.current) return;
-    const group = plantGroupRef.current;
+  // ------------------------------------------------------------------ render loop (no React state writes except throttled HUD updates)
+  const _ray = useRef(new THREE.Raycaster()).current;
+  const _plane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)).current;
+  const _v = useRef(new THREE.Vector3()).current;
+  const _m = useRef(new THREE.Matrix4()).current;
+  const _q = useRef(new THREE.Quaternion()).current;
+  const _s = useRef(new THREE.Vector3()).current;
 
-    // Clear existing
-    while (group.children.length > 0) {
-      group.remove(group.children[0]);
-    }
+  function floorHitFromNdc(ndcX: number, ndcY: number, floorY = 0, maxDist = 8): THREE.Vector3 | null {
+    const cam = cameraRef.current;
+    if (!cam) return null;
+    _ray.setFromCamera(new THREE.Vector2(ndcX, ndcY), cam);
+    _plane.constant = -floorY;
+    const hit = _ray.ray.intersectPlane(_plane, new THREE.Vector3());
+    if (!hit || hit.distanceTo(_ray.ray.origin) > maxDist) return null;
+    return hit;
+  }
 
-    // Build realistic botanical model
-    const newMesh = createProceduralPlantMesh(plant, {
-      scale: scale,
-      quality: 'hq',
-      includePot: true,
-    });
+  function renderLoop(_time: number, xrFrame?: any) {
+    const renderer = rendererRef.current, scene = sceneRef.current, cam = cameraRef.current;
+    if (!renderer || !scene || !cam) return;
+    const m = modeRef.current;
+    let hit: THREE.Vector3 | null = null;
+    let locked = false;
 
-    group.add(newMesh);
-    group.rotation.y = (rotationDeg * Math.PI) / 180;
-    group.position.set(plantPosition.x, plantPosition.y, plantPosition.z);
-  };
-
-  // React to active plant changes
-  useEffect(() => {
-    updatePlantModelMesh(activePlant, plantScale, plantRotation);
-  }, [activePlant, plantScale, plantRotation, plantPosition]);
-
-  // Sync garden boundary wireframe when dimensions change
-  useEffect(() => {
-    if (!boundaryBoxRef.current || !sceneRef.current) return;
-    sceneRef.current.remove(boundaryBoxRef.current);
-    const boxGeo = new THREE.BoxGeometry(gardenDimensions.width * 0.3048, 0.05, gardenDimensions.length * 0.3048);
-    const edges = new THREE.EdgesGeometry(boxGeo);
-    const boundaryLine = new THREE.LineSegments(
-      edges,
-      new THREE.LineBasicMaterial({ color: 0x2563eb, transparent: true, opacity: 0.4 })
-    );
-    boundaryLine.position.set(plantPosition.x, -0.6, plantPosition.z);
-    sceneRef.current.add(boundaryLine);
-    boundaryBoxRef.current = boundaryLine;
-  }, [gardenDimensions, plantPosition]);
-
-  // Dynamic reticle coloration reflecting real-time spot suitability
-  useEffect(() => {
-    if (!reticleRef.current || reticleRef.current.children.length < 3) return;
-    const ring = reticleRef.current.children[0] as THREE.Mesh;
-    const disk = reticleRef.current.children[1] as THREE.Mesh;
-    const arrow = reticleRef.current.children[2] as THREE.Mesh;
-
-    if (ring && ring.material) {
-      (ring.material as THREE.MeshBasicMaterial).color.setHex(placementSuitability.reticleHexColor);
-    }
-    if (disk && disk.material) {
-      (disk.material as THREE.MeshBasicMaterial).color.setHex(placementSuitability.reticleDiskColor);
-    }
-    if (arrow && arrow.material) {
-      (arrow.material as THREE.MeshBasicMaterial).color.setHex(
-        placementSuitability.vastuMatch ? 0x10b981 : 0xf97316
-      );
-    }
-  }, [placementSuitability]);
-
-  // Action: Auto-align compass coordinate to auspicious direction
-  const handleAutoAlignToBestSpot = () => {
-    const targetDir = activePlant.vastuDirections?.[0] || 'North-East';
-    const canonicalTarget = normalizeVastuDirection(targetDir);
-    const targetDeg =
-      canonicalTarget === 'North' ? 0 :
-      canonicalTarget === 'North-East' ? 45 :
-      canonicalTarget === 'East' ? 90 :
-      canonicalTarget === 'South-East' ? 135 :
-      canonicalTarget === 'South' ? 180 :
-      canonicalTarget === 'South-West' ? 225 :
-      canonicalTarget === 'West' ? 270 : 315;
-    setCompassHeading(targetDeg);
-    setScanningGuidance(`Auto-aligned camera coordinate to sacred ${canonicalTarget} zone for ${activePlant.name}!`);
-  };
-
-  // Action: Place Plant at Reticle Location
-  const handlePlacePlant = () => {
-    if (!reticleRef.current || !plantGroupRef.current) return;
-
-    // Anchor plant to reticle position
-    const targetPos = {
-      x: reticleRef.current.position.x,
-      y: reticleRef.current.position.y,
-      z: reticleRef.current.position.z,
-    };
-    setPlantPosition(targetPos);
-    plantGroupRef.current.position.set(targetPos.x, targetPos.y, targetPos.z);
-    setIsPlantPlaced(true);
-    setScanningGuidance('Plant anchored! Use controls below to move, rotate, resize, or save.');
-  };
-
-  // Action: Reset Plant Placement & Rescan
-  const handleResetPlacement = () => {
-    setIsPlantPlaced(false);
-    setPlantScale(1.0);
-    setPlantRotation(0);
-    setMeasuringMode(false);
-    setMeasurePointA(null);
-    setMeasurePointB(null);
-    setMeasuredDistanceFt(null);
-    setScanningGuidance('Slowly move your phone across the floor to detect surface planes.');
-  };
-
-  // Action: Touch / Tap Screen to reposition plant or measure
-  const handleInteractionPoint = (clientX: number, clientY: number) => {
-    if (!mountRef.current || !cameraRef.current || !sceneRef.current) return;
-
-    const rect = mountRef.current.getBoundingClientRect();
-    const x = ((clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((clientY - rect.top) / rect.height) * 2 + 1;
-
-    // Raycast onto ground plane y = -0.6
-    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.6);
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(x, y), cameraRef.current);
-    const intersectPoint = new THREE.Vector3();
-    raycaster.ray.intersectPlane(groundPlane, intersectPoint);
-
-    if (intersectPoint) {
-      if (measuringMode) {
-        // Measure mode: point A & point B
-        if (!measurePointA) {
-          setMeasurePointA(intersectPoint.clone());
-          setScanningGuidance('Point A marked! Now tap Point B to calculate distance.');
-        } else if (!measurePointB) {
-          setMeasurePointB(intersectPoint.clone());
-          const distM = measurePointA.distanceTo(intersectPoint);
-          const distFt = Math.round(distM * 3.28084 * 10) / 10;
-          setMeasuredDistanceFt(distFt);
-          setScanningGuidance(`Measured Distance: ${distFt} ft. Confirm or edit dimensions.`);
-        }
-      } else {
-        // Reposition reticle & placed plant
-        if (reticleRef.current) {
-          reticleRef.current.position.set(intersectPoint.x, -0.6, intersectPoint.z);
-        }
-        if (isPlantPlaced) {
-          setPlantPosition({ x: intersectPoint.x, y: -0.6, z: intersectPoint.z });
+    if (m === 'webxr' && xrFrame && hitSourceRef.current) {
+      const refSpace = renderer.xr.getReferenceSpace();
+      const results = xrFrame.getHitTestResults(hitSourceRef.current);
+      if (results.length && refSpace) {
+        const pose = results[0].getPose(refSpace);
+        if (pose) {
+          _m.fromArray(pose.transform.matrix);
+          _m.decompose(_v, _q, _s);
+          const up = new THREE.Vector3(0, 1, 0).applyQuaternion(_q);
+          if (up.y > 0.85) { hit = _v.clone(); locked = true; } // horizontal surfaces only
         }
       }
+    } else if (m === 'camera') {
+      cam.position.set(0, phoneHeightRef.current, 0);
+      const o = orientRef.current;
+      if (o) {
+        if (alphaOffsetRef.current === null) {
+          alphaOffsetRef.current = o.alpha;
+          // anchor world -Z to the real compass heading when the phone has one
+          if (absHeadingRef.current !== null) setNorthOffset(Math.round(absHeadingRef.current));
+        }
+        const screenAngle = (screen.orientation?.angle ?? (window as any).orientation ?? 0) as number;
+        orientationToQuaternion(cam.quaternion, o.alpha - alphaOffsetRef.current, o.beta, o.gamma, screenAngle);
+      } else {
+        cam.quaternion.setFromEuler(new THREE.Euler(lookRef.current.pitch, lookRef.current.yaw, 0, 'YXZ'));
+      }
+      cam.updateMatrixWorld();
+      hit = floorHitFromNdc(0, 0, 0, 6);
+      if (hit && hit.distanceTo(cam.position) < 0.35) hit = null;
+      // "Lock" = floor in view + camera held steady for ~0.4 s (or no camera feed to judge)
+      const steady = motionRef.current < 9 || !videoRef.current?.srcObject;
+      if (hit && steady) {
+        if (!lockSinceRef.current) lockSinceRef.current = performance.now();
+        locked = performance.now() - lockSinceRef.current > 400;
+      } else {
+        lockSinceRef.current = 0;
+      }
+    } else if (m === '3d') {
+      const ob = orbitRef.current;
+      cam.position.set(
+        ob.target.x + ob.radius * Math.sin(ob.phi) * Math.sin(ob.theta),
+        ob.target.y + ob.radius * Math.cos(ob.phi),
+        ob.target.z + ob.radius * Math.sin(ob.phi) * Math.cos(ob.theta)
+      );
+      cam.lookAt(ob.target);
+      cam.updateMatrixWorld();
+      hit = hoverRef.current ? hoverRef.current.clone() : floorHitFromNdc(0, 0);
+      locked = !!hit;
     }
-  };
 
-  const handleScreenTap = (e: React.MouseEvent<HTMLDivElement>) => {
-    handleInteractionPoint(e.clientX, e.clientY);
-  };
+    updateSpot(hit, locked);
 
-  const handleScreenTouch = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.changedTouches && e.changedTouches[0]) {
-      handleInteractionPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    // throttled compass HUD update
+    if (m !== 'webxr' || renderer.xr.isPresenting) {
+      const b = absHeadingRef.current !== null && m !== '3d' ? absHeadingRef.current : cameraBearing(renderer.xr.isPresenting ? renderer.xr.getCamera() : cam, northOffsetRef.current);
+      if (Math.abs(angleDelta(lastHeadingPushRef.current, b)) >= 3) {
+        lastHeadingPushRef.current = b;
+        setViewHeading(Math.round(b));
+      }
     }
+
+    renderer.render(scene, cam);
+  }
+
+  function updateSpot(hit: THREE.Vector3 | null, locked: boolean) {
+    const reticle = reticleRef.current, ghost = ghostRef.current;
+    const plant = activePlantRef.current;
+    const fr = frameRef.current;
+    spotPosRef.current = hit && locked ? hit : null;
+
+    let info: SpotInfo = EMPTY_SPOT;
+    if (hit && fr) {
+      const crowd = crowdingAt(placedRef.current, plant, hit, pointerRef.current?.kind === 'plant' ? pointerRef.current.id || undefined : undefined);
+      info = {
+        found: true,
+        locked,
+        zone: zoneOf(fr, hit),
+        inside: isInsideGarden(fr, hit),
+        crowdedBy: crowd ? crowd.item.plant.name : null,
+        crowdGapCm: crowd ? Math.round((crowd.need - crowd.dist) * 100) : 0,
+      };
+    }
+
+    if (reticle) {
+      reticle.visible = !!hit;
+      if (hit) {
+        reticle.position.set(hit.x, hit.y + 0.004, hit.z);
+        const color = !locked ? COLORS.gold : info.crowdedBy ? COLORS.bad : !info.inside || !isPlantVastuCompatible(plant, info.zone) ? COLORS.warn : COLORS.ok;
+        const [ring, spacing] = reticle.children as THREE.Mesh[];
+        (ring.material as THREE.MeshBasicMaterial).color.setHex(color);
+        (spacing.material as THREE.MeshBasicMaterial).color.setHex(color);
+        spacing.visible = !measuringRef.current;
+        spacing.scale.setScalar(Math.max(0.12, (spacingFt(plant) * FT_TO_M) / 2));
+        const pulse = locked ? 1 : 1 + Math.sin(performance.now() / 160) * 0.08;
+        reticle.children[0].scale.setScalar(pulse);
+      }
+    }
+    if (ghost) {
+      ghost.visible = !!hit && locked && !measuringRef.current && pointerRef.current?.kind !== 'plant';
+      if (hit) ghost.position.copy(hit);
+    }
+
+    const key = `${info.found}|${info.locked}|${info.zone}|${info.inside}|${info.crowdedBy}|${Math.round(info.crowdGapCm / 5)}`;
+    if (key !== spotKeyRef.current) {
+      spotKeyRef.current = key;
+      setSpot(info);
+    }
+  }
+
+  // ------------------------------------------------------------------ mode-specific scene setup
+  useEffect(() => {
+    const scene = sceneRef.current, cam = cameraRef.current;
+    if (!scene || !cam) return;
+    const is3d = mode === '3d';
+    scene.background = is3d ? new THREE.Color(0x081711) : null;
+    if (floorRef.current) floorRef.current.visible = is3d;
+    if (gridRef.current) gridRef.current.visible = is3d;
+    if (shadowRef.current) shadowRef.current.visible = !is3d;
+    cam.fov = is3d ? 50 : 63; // typical phone rear-camera vertical FOV in portrait ≈ 60–65°
+    cam.updateProjectionMatrix();
+    hoverRef.current = null;
+    lockSinceRef.current = 0;
+    if (mode === 'camera') alphaOffsetRef.current = null; // re-anchor yaw to where the phone points now
+  }, [mode]);
+
+  // AR lighting follows the real room brightness
+  useEffect(() => {
+    if (hemiRef.current) hemiRef.current.intensity = mode === '3d' || cameraLuma === null ? 1.0 : 0.45 + (cameraLuma / 255) * 1.1;
+  }, [cameraLuma, mode]);
+
+  // ghost preview of the active plant at the reticle
+  function disposeGhost() {
+    const g = ghostRef.current;
+    if (!g) return;
+    g.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh) (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach((m) => m.dispose());
+    });
+    g.removeFromParent();
+    ghostRef.current = null;
+  }
+  useEffect(() => {
+    const scene = sceneRef.current, cache = cacheRef.current;
+    if (!scene || !cache) return;
+    disposeGhost();
+    const ghost = cache.get(activePlant);
+    ghost.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const mats = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).map((m) => {
+        const c = m.clone();
+        c.transparent = true;
+        c.opacity = 0.5;
+        c.depthWrite = false;
+        return c;
+      });
+      mesh.material = Array.isArray(mesh.material) ? mats : mats[0];
+      mesh.castShadow = false;
+    });
+    ghost.visible = false;
+    scene.add(ghost);
+    ghostRef.current = ghost;
+  }, [activePlant]);
+
+  // sync placed plants → meshes (create once, then only update transforms)
+  useEffect(() => {
+    const layer = plantLayerRef.current, cache = cacheRef.current;
+    if (!layer || !cache) return;
+    const map = meshesRef.current;
+    const ids = new Set(placed.map((p) => p.id));
+    map.forEach((entry, id) => {
+      if (!ids.has(id)) {
+        entry.root.removeFromParent();
+        (entry.ring.material as THREE.Material).dispose();
+        map.delete(id);
+      }
+    });
+    for (const item of placed) {
+      let entry = map.get(item.id);
+      if (!entry || entry.plantKey !== item.plant._id) {
+        if (entry) { entry.root.removeFromParent(); (entry.ring.material as THREE.Material).dispose(); }
+        const root = new THREE.Group();
+        root.userData.placedId = item.id;
+        const model = cache.get(item.plant);
+        model.name = 'model';
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(0.95, 1, 64),
+          new THREE.MeshBasicMaterial({ color: COLORS.ok, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.y = 0.003;
+        root.add(model, ring);
+        layer.add(root);
+        entry = { root, ring, plantKey: item.plant._id };
+        map.set(item.id, entry);
+      }
+      entry.root.position.set(item.x, item.y, item.z);
+      const model = entry.root.getObjectByName('model')!;
+      model.rotation.y = THREE.MathUtils.degToRad(item.rotation);
+      model.scale.setScalar(item.scale);
+      entry.ring.scale.setScalar(Math.max(0.1, (spacingFt(item.plant) * item.scale * FT_TO_M) / 2));
+      const mat = entry.ring.material as THREE.MeshBasicMaterial;
+      mat.color.setHex(conflicts.has(item.id) ? COLORS.bad : item.id === selectedId ? COLORS.gold : COLORS.ok);
+      mat.opacity = item.id === selectedId || conflicts.has(item.id) ? 0.9 : 0.4;
+    }
+    // shadow catcher follows the floor height (WebXR floors are not at y = 0)
+    if (shadowRef.current && placed.length) shadowRef.current.position.y = placed[placed.length - 1].y + 0.002;
+  }, [placed, selectedId, conflicts]);
+
+  // garden boundary rectangle + north marker
+  useEffect(() => {
+    const g = boundaryRef.current;
+    if (!g) return;
+    g.traverse((c) => {
+      const m = c as THREE.Mesh;
+      m.geometry?.dispose();
+      (m.material as THREE.Material)?.dispose();
+    });
+    g.clear();
+    if (!gardenCenter && mode !== '3d') return;
+    const w = frame.widthM / 2, l = frame.lengthM / 2;
+    const pts = [new THREE.Vector3(-w, 0, -l), new THREE.Vector3(w, 0, -l), new THREE.Vector3(w, 0, l), new THREE.Vector3(-w, 0, l)];
+    const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: COLORS.gold, transparent: true, opacity: 0.8 }));
+    const fill = new THREE.Mesh(new THREE.PlaneGeometry(frame.widthM, frame.lengthM), new THREE.MeshBasicMaterial({ color: COLORS.gold, transparent: true, opacity: 0.06, depthWrite: false }));
+    fill.rotation.x = -Math.PI / 2;
+    // north arrow: world -Z is `northOffset`, so North lies at -northOffset around Y
+    // North arrow. World -Z faces compass bearing `northOffset`, so North sits at yaw −northOffset
+    // (bearing measured clockwise from −Z; rotating about +Y by −ψ turns −Z to bearing ψ).
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.2, 16), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+    arrow.rotation.x = -Math.PI / 2; // point along −Z
+    arrow.position.set(0, 0.02, -Math.min(w, l) * 0.8);
+    const pivot = new THREE.Group();
+    pivot.rotation.y = THREE.MathUtils.degToRad(northOffset);
+    pivot.add(arrow);
+    g.add(fill, line, pivot);
+    g.position.set(frame.center.x, frame.center.y + 0.002, frame.center.z);
+  }, [frame, gardenCenter, mode, northOffset]);
+
+  // measurement markers
+  useEffect(() => {
+    const g = measureGroupRef.current;
+    if (!g) return;
+    g.children.forEach((c) => {
+      const m = c as THREE.Mesh;
+      m.geometry?.dispose();
+      (m.material as THREE.Material)?.dispose();
+    });
+    g.clear();
+    measurePts.forEach((p) => {
+      const s = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 12), new THREE.MeshBasicMaterial({ color: 0xe07a5f }));
+      s.position.copy(p);
+      g.add(s);
+    });
+    if (measurePts.length === 2) {
+      g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(measurePts), new THREE.LineBasicMaterial({ color: 0xe07a5f })));
+    }
+  }, [measurePts]);
+
+  // ------------------------------------------------------------------ actions
+  const markDirty = () => setDirtySinceSave(true);
+
+  // In AR the garden is laid out in front of the user, as if standing at its near edge,
+  // so the first plant does not automatically land in the centre (Brahmasthan).
+  const ensureGardenCenter = (p: THREE.Vector3) => {
+    if (gardenCenter || modeRef.current === '3d') return;
+    const renderer = rendererRef.current, cam = cameraRef.current;
+    const c = new THREE.Vector3(p.x, p.y, p.z);
+    if (renderer && cam) {
+      const view = renderer.xr.isPresenting ? renderer.xr.getCamera() : cam;
+      const fwd = new THREE.Vector3();
+      view.getWorldDirection(fwd);
+      fwd.y = 0;
+      if (fwd.lengthSq() < 1e-4) fwd.set(0, 0, -1);
+      fwd.normalize();
+      const foot = new THREE.Vector3().setFromMatrixPosition(view.matrixWorld);
+      const halfDepth = (Math.abs(fwd.z) >= Math.abs(fwd.x) ? gardenDims.length : gardenDims.width) * FT_TO_M / 2;
+      c.set(foot.x + fwd.x * (halfDepth + 0.3), p.y, foot.z + fwd.z * (halfDepth + 0.3));
+    }
+    setGardenCenter({ x: c.x, y: c.y, z: c.z });
+    frameRef.current = { ...(frameRef.current as GardenFrame), center: c };
   };
 
-  // Action: Save to Garden Layout via backend API
-  const handleSaveToGarden = async () => {
-    if (!user) {
-      alert('Sign in to save your AR garden designs to your account!');
+  const placeAt = (p: THREE.Vector3, plant: Plant = activePlant, via?: PlacedItem['placedVia']) => {
+    ensureGardenCenter(p);
+    const crowd = crowdingAt(placedRef.current, plant, p);
+    const item: PlacedItem = {
+      id: uid(),
+      plant,
+      x: p.x, y: p.y, z: p.z,
+      rotation: 0,
+      scale: 1,
+      placedVia: via || (modeRef.current === 'webxr' ? 'ar-webxr' : modeRef.current === 'camera' ? 'ar-camera' : '3d'),
+    };
+    setPlaced((prev) => [...prev, item]);
+    setSelectedId(item.id);
+    markDirty();
+    const fr = frameRef.current!;
+    const zone = zoneOf(fr, p);
+    if (crowd) showToast(`Placed, but ${Math.round((crowd.need - crowd.dist) * 100)} cm too close to ${crowd.item.plant.name}. Try Auto-place.`, 'warn');
+    else if (zone !== 'Center' && isPlantVastuCompatible(plant, zone)) showToast(`${plant.name} placed in the auspicious ${zone} zone ✓`);
+    else showToast(`${plant.name} placed (${zone} zone). Best zones: ${plant.vastuDirections.join(', ')}`, 'warn');
+  };
+
+  const handlePlace = () => {
+    const p = spotPosRef.current;
+    if (!p) {
+      showToast(mode === 'camera' ? 'Point the camera at the floor and hold steady…' : 'No surface detected yet.', 'warn');
       return;
     }
+    placeAt(p.clone());
+  };
 
-    setIsSaving(true);
-    setSaveSuccessMsg(null);
+  const handleAutoPlace = (plant: Plant = activePlant) => {
+    if (!gardenCenter && mode !== '3d') {
+      const p = spotPosRef.current;
+      if (!p) { showToast('Point at the floor first so I can lay out your garden there.', 'warn'); return; }
+      ensureGardenCenter(p);
+    }
+    const fr = frameRef.current;
+    if (!fr) return;
+    const best = findBestSpot(fr, placedRef.current, plant, spotPosRef.current, fr.center.y);
+    if (!best) {
+      showToast('No free spot left in this garden. Enlarge the garden or remove a plant.', 'bad');
+      return;
+    }
+    placeAt(new THREE.Vector3(best.x, best.y, best.z), plant);
+  };
 
+  const updateSelected = (fn: (p: PlacedItem) => PlacedItem) => {
+    if (!selectedId) return;
+    setPlaced((prev) => prev.map((p) => (p.id === selectedId ? fn(p) : p)));
+    markDirty();
+  };
+
+  const moveSelectedToSpot = () => {
+    const p = spotPosRef.current;
+    if (!p || !selectedId) return;
+    updateSelected((it) => ({ ...it, x: p.x, y: p.y, z: p.z }));
+  };
+
+  const deleteSelected = () => {
+    if (!selectedId) return;
+    setPlaced((prev) => prev.filter((p) => p.id !== selectedId));
+    setSelectedId(null);
+    markDirty();
+  };
+
+  const duplicateSelected = () => {
+    if (selected) handleAutoPlace(selected.plant);
+  };
+
+  const setCenterHere = () => {
+    const p = spotPosRef.current;
+    if (!p) { showToast('Point at the floor first.', 'warn'); return; }
+    setGardenCenter({ x: p.x, y: p.y, z: p.z });
+    showToast('Garden centre set here.');
+  };
+
+  const fitGardenToPlants = () => {
+    if (!placed.length) return;
+    const xs = placed.map((p) => p.x), zs = placed.map((p) => p.z);
+    const pad = 0.4;
+    const minX = Math.min(...xs) - pad, maxX = Math.max(...xs) + pad, minZ = Math.min(...zs) - pad, maxZ = Math.max(...zs) + pad;
+    setGardenCenter({ x: (minX + maxX) / 2, y: placed[0].y, z: (minZ + maxZ) / 2 });
+    setGardenDims({ width: Math.max(2, Math.ceil((maxX - minX) * M_TO_FT * 2) / 2), length: Math.max(2, Math.ceil((maxZ - minZ) * M_TO_FT * 2) / 2) });
+    markDirty();
+  };
+
+  const recalibrateNorth = () => {
+    if (absHeadingRef.current !== null && cameraRef.current) {
+      // north offset = real heading − camera yaw in world
+      const yawBearing = cameraBearing(rendererRef.current?.xr.isPresenting ? rendererRef.current.xr.getCamera() : cameraRef.current, 0);
+      setNorthOffset(Math.round(normDeg(absHeadingRef.current - yawBearing)));
+      showToast('Compass calibrated to your phone sensor.');
+    } else {
+      showToast('No compass sensor — use the slider to set which way North is.', 'warn');
+    }
+  };
+
+  // ------------------------------------------------------------------ WebXR (real plane hit-testing on ARCore / supported devices)
+  const startWebXR = async () => {
+    const xr = (navigator as any).xr;
+    const renderer = rendererRef.current;
+    if (!xr || !renderer || !rootRef.current) return;
+    setXrStarting(true);
     try {
-      const placedPlantData: PlacedPlant = {
-        id: `placed_ar_${Date.now()}`,
-        plantId: activePlant._id,
-        name: activePlant.name,
-        scientificName: activePlant.scientificName,
-        image: activePlant.image,
-        x: 50,
-        y: 50,
-        rotation: plantRotation,
-        scale: plantScale,
-        model3D: activePlant.model3D,
-        potSizeFt: 1.0 * plantScale,
-        spacingRequiredFt: activePlant.spacingRequiredFt || 1.5,
-        plantHeightFt: parseFloat(estimatedPhysicalHeightFt),
-      };
-
-      const res = await api.createGarden({
-        gardenName: `${activePlant.name} - AR Space Layout`,
-        roomType: spaceType,
-        length: gardenDimensions.length,
-        width: gardenDimensions.width,
-        direction: compassDirectionName,
-        plants: [placedPlantData],
-        notes: `AR Placed with scale ${plantScale}x. Orientation: ${compassDirectionName}. Sunlight: ${detectedSunlight}`,
-        unit: 'ft',
-        totalSquareFeet: gardenDimensions.length * gardenDimensions.width,
+      stopCamera(); // ARCore needs exclusive camera access
+      const session = await xr.requestSession('immersive-ar', {
+        requiredFeatures: ['hit-test'],
+        optionalFeatures: ['dom-overlay', 'local-floor'],
+        domOverlay: { root: rootRef.current },
       });
+      xrSessionRef.current = session;
+      renderer.xr.setReferenceSpaceType('local');
+      await renderer.xr.setSession(session);
+      const viewer = await session.requestReferenceSpace('viewer');
+      hitSourceRef.current = await session.requestHitTestSource({ space: viewer });
 
-      setSaveSuccessMsg(`Saved to your garden collection! (${activePlant.name})`);
-      if (onSaveToGardenSuccess && res?.garden?._id) {
-        onSaveToGardenSuccess(res.garden._id);
-      }
+      // capture compass so zones are real-world directions
+      if (absHeadingRef.current !== null) setNorthOffset(Math.round(absHeadingRef.current));
+      setPlaced([]);
+      setSelectedId(null);
+      setGardenCenter(null);
+      setMode('webxr');
+
+      session.addEventListener('select', () => {
+        const p = spotPosRef.current;
+        if (!p) return;
+        if (measuringRef.current) { addMeasurePoint(p.clone()); return; }
+        // tap near an existing plant selects it, otherwise place a new one
+        const near = placedRef.current.find((it) => Math.hypot(it.x - p.x, it.z - p.z) < 0.25);
+        if (near) setSelectedId(near.id);
+        else placeAt(p.clone(), activePlantRef.current, 'ar-webxr');
+      });
+      session.addEventListener('end', () => {
+        hitSourceRef.current?.cancel?.();
+        hitSourceRef.current = null;
+        xrSessionRef.current = null;
+        setMode('camera');
+        startCamera().then((ok) => !ok && setMode('3d'));
+      });
     } catch (err: any) {
-      alert(`Error saving to garden: ${err.message || 'Network error'}`);
+      showToast(`Could not start AR: ${err?.message || err}`, 'bad');
+      startCamera();
+    } finally {
+      setXrStarting(false);
+    }
+  };
+
+  const switchMode = async (next: ViewMode) => {
+    if (next === mode) return;
+    if (mode === 'webxr') await xrSessionRef.current?.end?.().catch(() => undefined);
+    if (next === 'webxr') return startWebXR();
+    if (next === 'camera') {
+      const ok = await startCamera();
+      if (!ok) { showToast('Camera unavailable — staying in 3D view.', 'warn'); return; }
+    } else {
+      stopCamera();
+      setCameraLuma(null);
+    }
+    // world coordinates differ per mode, so start a fresh layout
+    if (placed.length) showToast('Switched view — layout restarted for the new space.', 'warn');
+    setPlaced([]);
+    setSelectedId(null);
+    setGardenCenter(null);
+    setMode(next);
+  };
+
+  // ------------------------------------------------------------------ pointer input (tap = place/select, drag = move plant / orbit / look)
+  const ndcFromEvent = (e: React.PointerEvent) => {
+    const r = mountRef.current!.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 };
+  };
+
+  const pickPlant = (ndc: { x: number; y: number }): string | null => {
+    const cam = cameraRef.current, layer = plantLayerRef.current;
+    if (!cam || !layer) return null;
+    _ray.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), cam);
+    const hits = _ray.intersectObjects(layer.children, true);
+    for (const h of hits) {
+      let o: THREE.Object3D | null = h.object;
+      while (o && !o.userData.placedId) o = o.parent;
+      if (o) return o.userData.placedId as string;
+    }
+    return null;
+  };
+
+  const addMeasurePoint = (p: THREE.Vector3) => {
+    setMeasurePts((prev) => (prev.length >= 2 ? [p] : [...prev, p]));
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (mode === 'webxr') return;
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    const ndc = ndcFromEvent(e);
+    const id = measuring ? null : pickPlant(ndc);
+    pointerRef.current = {
+      x: e.clientX, y: e.clientY, t: performance.now(), id, dragging: false,
+      kind: id ? 'plant' : mode === '3d' ? 'orbit' : mode === 'camera' && !orientRef.current ? 'look' : 'none',
+    };
+    if (id) setSelectedId(id);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (mode === 'webxr') return;
+    const ndc = ndcFromEvent(e);
+    const pr = pointerRef.current;
+    if (mode === '3d' && !pr) {
+      hoverRef.current = floorHitFromNdc(ndc.x, ndc.y);
+      return;
+    }
+    if (!pr) return;
+    const dx = e.clientX - pr.x, dy = e.clientY - pr.y;
+    if (!pr.dragging && Math.hypot(dx, dy) > 6) pr.dragging = true;
+    if (!pr.dragging) return;
+
+    if (pr.kind === 'plant' && pr.id) {
+      const p = floorHitFromNdc(ndc.x, ndc.y, placedRef.current.find((it) => it.id === pr.id)?.y ?? 0);
+      const entry = meshesRef.current.get(pr.id);
+      if (p && entry) entry.root.position.set(p.x, entry.root.position.y, p.z);
+      hoverRef.current = p;
+    } else if (pr.kind === 'orbit') {
+      const ob = orbitRef.current;
+      ob.theta -= dx * 0.008;
+      ob.phi = THREE.MathUtils.clamp(ob.phi - dy * 0.006, 0.25, 1.45);
+      pr.x = e.clientX; pr.y = e.clientY;
+    } else if (pr.kind === 'look') {
+      lookRef.current.yaw -= dx * 0.004;
+      lookRef.current.pitch = THREE.MathUtils.clamp(lookRef.current.pitch - dy * 0.004, -1.4, 0.2);
+      pr.x = e.clientX; pr.y = e.clientY;
+    }
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (mode === 'webxr') return;
+    const pr = pointerRef.current;
+    pointerRef.current = null;
+    if (!pr) return;
+    const ndc = ndcFromEvent(e);
+
+    if (pr.kind === 'plant' && pr.id && pr.dragging) {
+      const entry = meshesRef.current.get(pr.id);
+      if (entry) {
+        const { x, z } = entry.root.position;
+        setPlaced((prev) => prev.map((it) => (it.id === pr.id ? { ...it, x, z } : it)));
+        markDirty();
+      }
+      if (mode === '3d') hoverRef.current = floorHitFromNdc(ndc.x, ndc.y);
+      return;
+    }
+    const isTap = !pr.dragging && performance.now() - pr.t < 500;
+    if (!isTap) return;
+    if (pr.id) return; // tapped a plant → already selected
+
+    const p = mode === 'camera' && !orientRef.current ? spotPosRef.current : floorHitFromNdc(ndc.x, ndc.y, 0, 7);
+    if (!p) { showToast('That point is not on the floor.', 'warn'); return; }
+    if (measuring) { addMeasurePoint(p.clone()); return; }
+    if (selectedId) { setSelectedId(null); return; } // first tap deselects
+    placeAt(p.clone());
+  };
+
+  const onWheel = (e: React.WheelEvent) => {
+    if (mode !== '3d') return;
+    const ob = orbitRef.current;
+    ob.radius = THREE.MathUtils.clamp(ob.radius * (e.deltaY > 0 ? 1.1 : 0.9), 1.2, 12);
+  };
+
+  // WebXR dom-overlay: taps on UI must not also fire XR "select"
+  useEffect(() => {
+    const el = uiRef.current;
+    if (!el) return;
+    const stop = (ev: Event) => ev.preventDefault();
+    el.addEventListener('beforexrselect', stop);
+    return () => el.removeEventListener('beforexrselect', stop);
+  }, []);
+
+  // ------------------------------------------------------------------ save to MongoDB (via API)
+  const handleSave = async () => {
+    if (!user) { showToast('Sign in to save your garden.', 'warn'); return; }
+    if (!placed.length) { showToast('Place at least one plant first.', 'warn'); return; }
+    setIsSaving(true);
+    try {
+      const fr = frameRef.current!;
+      const plants: (PlacedPlant & Record<string, unknown>)[] = placed.map((it) => {
+        const pct = toLayoutPercent(fr, it);
+        return {
+          id: it.id,
+          plantId: it.plant._id,
+          name: it.plant.name,
+          scientificName: it.plant.scientificName,
+          image: it.plant.image,
+          x: pct.x,
+          y: pct.y,
+          rotation: Math.round(it.rotation),
+          scale: it.scale,
+          model3D: it.plant.model3D,
+          potSizeFt: Math.round(spacingFt(it.plant) * 0.6 * it.scale * 10) / 10,
+          spacingRequiredFt: spacingFt(it.plant),
+          plantHeightFt: Math.round(estimatePlantHeightM(it.plant) * it.scale * M_TO_FT * 10) / 10,
+          worldX: Math.round((it.x - fr.center.x) * 1000) / 1000,
+          worldZ: Math.round((it.z - fr.center.z) * 1000) / 1000,
+          placedVia: it.placedVia,
+        };
+      });
+      const outside = placed.filter((it) => !isInsideGarden(fr, it)).length;
+      const payload = {
+        gardenName: `${placed[0].plant.name.split(' (')[0]}${placed.length > 1 ? ` + ${placed.length - 1} more` : ''} – ${spaceType} AR Layout`,
+        roomType: spaceType,
+        length: gardenDims.length,
+        width: gardenDims.width,
+        direction: headingToDirection(northOffset),
+        plants,
+        notes: `Placed in ${mode === 'webxr' ? 'WebXR AR' : mode === 'camera' ? 'camera AR' : '3D view'}. Light: ${cameraLuma !== null ? `${cameraLuma} luma` : manualSun}. Spacing conflicts: ${conflicts.size}. Outside boundary: ${outside}.`,
+        unit: 'ft',
+        totalSquareFeet: Math.round(gardenDims.length * gardenDims.width * 10) / 10,
+      };
+      const res = savedGardenId ? await api.updateGarden(savedGardenId, payload) : await api.createGarden(payload);
+      const id = res?.garden?._id || savedGardenId;
+      if (id) setSavedGardenId(id);
+      setDirtySinceSave(false);
+      showToast(savedGardenId ? 'Garden updated ✓' : `Saved ${placed.length} plant${placed.length > 1 ? 's' : ''} to My Gardens ✓`);
+      if (id) onSaveToGardenSuccess?.(id);
+    } catch (err: any) {
+      showToast(`Save failed: ${err?.message || 'network error'}`, 'bad');
     } finally {
       setIsSaving(false);
     }
   };
 
+  // ------------------------------------------------------------------ UI
+  const modeLabel = mode === 'webxr' ? 'AR · Surface tracking' : mode === 'camera' ? (sensorsLive ? 'Camera AR · Motion tracking' : 'Camera AR · Drag to look') : '3D Space';
+  const statusLabel =
+    mode === '3d' ? (spot.found ? 'Ready to place' : 'Point at the floor') :
+    !spot.found ? (mode === 'webxr' ? 'Scanning for surfaces…' : 'Tilt camera toward the floor') :
+    !spot.locked ? 'Hold steady…' : 'Surface locked';
+  const guidance = measuring
+    ? measurePts.length === 0 ? 'Measure: tap the first corner on the floor.' : measurePts.length === 1 ? 'Now tap the second point.' : `Distance: ${measuredFt} ft — use it below or tap again to re-measure.`
+    : selected
+    ? `${selected.plant.name} selected · drag to move, or use the controls below.`
+    : mode === 'webxr'
+    ? 'Move your phone slowly so the camera finds the floor, then tap to place.'
+    : mode === 'camera'
+    ? (sensorsLive ? 'Rotate to look around — plants stay where you put them. Tap the floor to place.' : 'Drag to aim at the floor, tap to place.')
+    : 'Drag to orbit · scroll to zoom · click the floor to place.';
+
+  const toneClass = (t: 'ok' | 'warn' | 'bad' | 'none') =>
+    t === 'ok' ? 'border-[#68D391]/50 text-[#68D391]' : t === 'warn' ? 'border-amber-400/50 text-amber-300' : t === 'bad' ? 'border-red-500/50 text-red-300' : 'border-[#D4AF37]/30 text-[#A3C1AD]';
+
+  const chip = (label: string, value: string, tone: 'ok' | 'warn' | 'bad' | 'none') => (
+    <div className={`px-2 py-1.5 rounded-xl border bg-black/30 min-w-0 ${toneClass(tone)}`}>
+      <span className="block text-[9px] uppercase font-semibold text-[#A3C1AD]">{label}</span>
+      <span className="block text-[11px] font-bold truncate">{value}</span>
+    </div>
+  );
+
+  const iconBtn = (title: string, onClick: () => void, icon: React.ReactNode, active = false, disabled = false) => (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      disabled={disabled}
+      onClick={onClick}
+      className={`p-2.5 rounded-xl transition active:scale-95 disabled:opacity-30 ${active ? 'luxury-btn-copper text-white' : 'hover:bg-[#0E281E] text-[#D4AF37]'}`}
+    >
+      {icon}
+    </button>
+  );
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#081711] flex flex-col overflow-hidden select-none font-sans">
-      
-      {/* 1. BACKGROUND CAMERA FEED (OR SPATIAL ROOM SIMULATION) */}
-      <div 
-        onClick={handleScreenTap}
-        onTouchEnd={handleScreenTouch}
-        className="absolute inset-0 w-full h-full overflow-hidden cursor-crosshair z-0"
-        style={{ touchAction: 'manipulation' }}
-      >
-        {streamActive ? (
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            autoPlay
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          /* Simulated Spatial Studio Room Background in Deep Emerald */
-          <div className="w-full h-full bg-gradient-to-b from-[#081711] via-[#0E281E] to-[#081711] relative">
-            <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20" />
+    <div ref={rootRef} className="fixed inset-0 z-50 bg-[#081711] overflow-hidden select-none font-sans text-[#F4EFE6]">
+      {/* camera feed (always mounted so the stream can attach) */}
+      <video
+        ref={videoRef}
+        playsInline
+        muted
+        autoPlay
+        className={`absolute inset-0 w-full h-full object-cover ${streamActive && mode === 'camera' ? '' : 'hidden'}`}
+      />
+
+      {/* WebGL canvas + input surface */}
+      <div
+        ref={mountRef}
+        className="absolute inset-0 w-full h-full cursor-crosshair"
+        style={{ touchAction: 'none' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => (pointerRef.current = null)}
+        onPointerLeave={() => { if (mode === '3d' && !pointerRef.current) hoverRef.current = null; }}
+        onWheel={onWheel}
+      />
+
+      {/* center crosshair for AR modes */}
+      {mode !== '3d' && !measuring && (
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6">
+          <div className="absolute inset-x-0 top-1/2 h-px bg-white/60" />
+          <div className="absolute inset-y-0 left-1/2 w-px bg-white/60" />
+        </div>
+      )}
+
+      {/* ---------- overlay UI ---------- */}
+      <div ref={uiRef} className="absolute inset-0 flex flex-col pointer-events-none">
+        {/* top bar */}
+        <div className="pt-3 px-3 flex items-center justify-between gap-2 pointer-events-auto">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => { xrSessionRef.current?.end?.(); onClose(); }}
+              className="p-2.5 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl border border-[#D4AF37]/35 shadow-lg"
+              title="Exit"
+              aria-label="Exit"
+            >
+              <ArrowLeft className="w-5 h-5 text-[#D4AF37]" />
+            </button>
+            <div className="bg-[#0B1D16]/90 backdrop-blur-xl px-3 py-1.5 rounded-full border border-[#D4AF37]/30 shadow-lg min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${spot.locked ? 'bg-[#68D391]' : 'bg-[#D4AF37] animate-pulse'}`} />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#F6D985] truncate">{statusLabel}</span>
+              </div>
+              <span className="block text-[9px] text-[#A3C1AD] truncate">{modeLabel}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowCalibration((v) => !v)}
+              className="bg-[#0B1D16]/90 backdrop-blur-xl px-3 py-2 rounded-full border border-[#D4AF37]/30 shadow-lg flex items-center gap-1.5"
+              title="Compass & garden settings"
+            >
+              <Compass className="w-4 h-4 text-[#D4AF37]" style={{ transform: `rotate(${-viewHeading}deg)` }} />
+              <span className="text-[11px] font-bold text-[#F6D985]">{headingToDirection(viewHeading)} {viewHeading}°</span>
+            </button>
+          </div>
+        </div>
+
+        {/* mode switcher */}
+        <div className="px-3 mt-2 flex flex-wrap gap-1.5 pointer-events-auto">
+          {capabilities?.supportsImmersiveAR && (
+            <button type="button" disabled={xrStarting} onClick={() => switchMode('webxr')}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${mode === 'webxr' ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0B1D16]/90 border-[#D4AF37]/30'}`}>
+              <Smartphone className="w-3.5 h-3.5" /> {xrStarting ? 'Starting…' : mode === 'webxr' ? 'AR active' : 'Start real AR'}
+            </button>
+          )}
+          {capabilities?.hasCamera && (
+            <button type="button" onClick={() => switchMode('camera')}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${mode === 'camera' ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0B1D16]/90 border-[#D4AF37]/30'}`}>
+              <Camera className="w-3.5 h-3.5" /> Camera
+            </button>
+          )}
+          <button type="button" onClick={() => switchMode('3d')}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${mode === '3d' ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0B1D16]/90 border-[#D4AF37]/30'}`}>
+            <Box className="w-3.5 h-3.5" /> 3D
+          </button>
+          {needsSensorPermission && mode === 'camera' && (
+            <button type="button" onClick={enableSensors} className="px-3 py-1.5 rounded-full text-[11px] font-bold border border-[#68D391]/50 text-[#68D391] bg-[#0B1D16]/90">
+              Enable motion tracking
+            </button>
+          )}
+          {onSwitchTo3DPlanner && (
+            <button type="button" onClick={() => onSwitchTo3DPlanner(activePlant)} className="px-3 py-1.5 rounded-full text-[11px] font-bold border bg-[#0B1D16]/90 border-[#D4AF37]/30 hidden sm:block">
+              Open Garden Planner
+            </button>
+          )}
+        </div>
+        {cameraError && mode !== 'webxr' && (
+          <p className="mx-3 mt-1.5 text-[10px] text-amber-300 bg-black/50 rounded-lg px-2 py-1 self-start pointer-events-auto">{cameraError}</p>
+        )}
+
+        {/* spot detection HUD */}
+        <div className="px-3 mt-2 pointer-events-auto">
+          <div className={`max-w-xl mx-auto bg-[#0B1D16]/90 backdrop-blur-2xl rounded-2xl p-2.5 border shadow-2xl ${toneClass(spotStatus)}`}>
+            <div className="grid grid-cols-4 gap-1.5">
+              {chip('Surface', spot.locked ? 'Locked' : spot.found ? 'Steadying' : 'Searching', spot.locked ? 'ok' : spot.found ? 'warn' : 'none')}
+              {chip('Vastu zone', spot.found ? `${spot.zone}${spotZoneMatch ? ' ✓' : ''}` : '—', !spot.found ? 'none' : spotZoneMatch ? 'ok' : 'warn')}
+              {chip('Light', `${suitability.lightLevelDetected}${cameraLuma !== null ? ` · ${cameraLuma}` : ''}`, suitability.lightMatch ? 'ok' : 'warn')}
+              {chip('Spacing', !spot.found ? '—' : spot.crowdedBy ? `−${spot.crowdGapCm} cm` : !spot.inside ? 'Outside' : 'Clear', !spot.found ? 'none' : spot.crowdedBy ? 'bad' : spot.inside ? 'ok' : 'warn')}
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <p className="text-[10px] leading-snug text-[#E8E2D5] flex-1">
+                {spot.crowdedBy
+                  ? `Too close to ${spot.crowdedBy}. ${activePlant.name.split(' (')[0]} needs ${spacingFt(activePlant)} ft clearance.`
+                  : spot.found && !spotZoneMatch
+                  ? `${activePlant.name.split(' (')[0]} prefers the ${activePlant.vastuDirections.join(' / ')} zone. ${suitability.lightGuidance}`
+                  : spot.found
+                  ? `Good spot · ${suitability.lightGuidance}`
+                  : guidance}
+              </p>
+              <button type="button" onClick={() => handleAutoPlace()}
+                className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#D4AF37]/20 hover:bg-[#D4AF37]/35 text-[#F6D985] border border-[#D4AF37]/40 flex items-center gap-1 shrink-0">
+                <Wand2 className="w-3.5 h-3.5" /> Auto-place
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* calibration / garden settings */}
+        {showCalibration && (
+          <div className="mx-3 mt-2 self-end w-[min(100%-1.5rem,22rem)] bg-[#0B1D16]/95 backdrop-blur-2xl p-3.5 rounded-2xl border border-[#D4AF37]/35 shadow-2xl space-y-3 pointer-events-auto max-h-[50vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">Space &amp; compass</span>
+              <button type="button" onClick={() => setShowCalibration(false)} aria-label="Close"><X className="w-4 h-4 text-[#A3C1AD]" /></button>
+            </div>
+            <div>
+              <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">North is at {northOffset}° from the start view</label>
+              <input type="range" min={0} max={355} step={5} value={northOffset} onChange={(e) => setNorthOffset(Number(e.target.value))} className="w-full accent-[#D4AF37]" />
+              {hasAbsoluteCompass && (
+                <button type="button" onClick={recalibrateNorth} className="mt-1 text-[10px] font-bold text-[#68D391] underline">Use phone compass</button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(['length', 'width'] as const).map((k) => (
+                <label key={k} className="text-[10px] text-[#A3C1AD] uppercase font-semibold">
+                  Garden {k} (ft)
+                  <input type="number" min={1} max={100} step={0.5} value={gardenDims[k]}
+                    onChange={(e) => { setGardenDims((d) => ({ ...d, [k]: Math.max(1, Number(e.target.value) || 1) })); markDirty(); }}
+                    className="mt-0.5 w-full bg-[#0E281E] border border-[#D4AF37]/25 rounded-lg px-2 py-1 text-xs text-[#F4EFE6]" />
+                </label>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <button type="button" onClick={setCenterHere} className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#0E281E] border border-[#D4AF37]/25">Set garden centre at crosshair</button>
+              <button type="button" onClick={fitGardenToPlants} disabled={!placed.length} className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#0E281E] border border-[#D4AF37]/25 disabled:opacity-40">Fit garden to plants</button>
+            </div>
+            <div>
+              <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">Location</label>
+              <div className="grid grid-cols-4 gap-1">
+                {(['Indoor', 'Balcony', 'Terrace', 'Outdoor'] as const).map((s) => (
+                  <button key={s} type="button" onClick={() => setSpaceType(s)}
+                    className={`py-1 rounded-lg text-[10px] font-bold ${spaceType === s ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20'}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">
+                Sunlight {cameraLuma !== null && '(camera reading overrides when very bright/dim)'}
+              </label>
+              <div className="grid grid-cols-3 gap-1">
+                {(['High', 'Medium', 'Low'] as const).map((s) => (
+                  <button key={s} type="button" onClick={() => setManualSun(s)}
+                    className={`py-1 rounded-lg text-[10px] font-bold ${manualSun === s ? 'luxury-btn-copper text-white' : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20'}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            {mode === 'camera' && (
+              <div>
+                <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">Phone height above floor: {phoneHeightM.toFixed(2)} m</label>
+                <input type="range" min={0.5} max={2} step={0.05} value={phoneHeightM} onChange={(e) => setPhoneHeightM(Number(e.target.value))} className="w-full accent-[#D4AF37]" />
+                <p className="text-[9px] text-[#A3C1AD] mt-0.5">Sets real-world scale in camera mode. Measure once with a tape for best accuracy.</p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Real-time 3D Perspective Grid for surface grounding */}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none opacity-25 [perspective:700px]">
-          <div className="w-full h-full [transform:rotateX(72deg)] bg-[radial-gradient(#d4af37_2px,transparent_2px)] [background-size:36px_36px]" />
-        </div>
-      </div>
-
-      {/* 2. THREE.JS 3D WEBGL AR CANVAS */}
-      <div 
-        ref={mountRef} 
-        onClick={handleScreenTap}
-        onTouchEnd={handleScreenTouch}
-        className="absolute inset-0 w-full h-full pointer-events-auto z-10" 
-        style={{ touchAction: 'manipulation' }}
-      />
-
-      {/* 3. TOP HUD BAR: BACK BUTTON, AR STATUS PILL, COMPASS, CAMERA CONTROLS */}
-      <div className="relative z-30 pt-3 px-3 sm:px-5 flex items-center justify-between pointer-events-none">
-        
-        {/* Left: Back / Exit Button & AR Active Pill */}
-        <div className="flex items-center gap-2 pointer-events-auto">
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2.5 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl text-[#F4EFE6] border border-[#D4AF37]/35 hover:bg-[#133528] transition shadow-lg flex items-center justify-center min-w-[42px] min-h-[42px]"
-            title="Exit AR View"
-          >
-            <ArrowLeft className="w-5 h-5 text-[#D4AF37]" />
-          </button>
-
-          <div className="bg-[#0B1D16]/90 backdrop-blur-xl px-4 py-2 rounded-full border border-[#D4AF37]/30 text-[#F4EFE6] flex items-center gap-2 shadow-2xl text-xs">
-            <span className={`w-2.5 h-2.5 rounded-full ${surfaceDetected ? 'bg-[#68D391] animate-pulse' : 'bg-[#D4AF37]'}`} />
-            <span className="font-serif font-bold text-[#F6D985] tracking-wider uppercase text-[11px]">
-              {surfaceDetected ? 'AR TRACKING LOCKED' : 'SCANNING SURFACE...'}
-            </span>
+        {/* toast */}
+        {toast && (
+          <div className={`self-center mt-2 px-4 py-2 rounded-full text-xs font-bold shadow-2xl bg-[#0B1D16]/95 backdrop-blur-xl border flex items-center gap-2 pointer-events-none ${toneClass(toast.tone)}`}>
+            {toast.tone === 'ok' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+            <span>{toast.text}</span>
           </div>
+        )}
+
+        <div className="flex-1" />
+
+        {/* guidance */}
+        <div className="px-3 mb-1.5 flex justify-center pointer-events-none">
+          <span className="bg-[#0B1D16]/90 backdrop-blur-xl px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[10px] text-[#E8E2D5] text-center">
+            <Sparkles className="w-3 h-3 inline mr-1 text-[#D4AF37]" />{guidance}
+          </span>
         </div>
 
-        {/* Right: Compass Orientation & Camera Toggle Controls */}
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Compass pill */}
-          <button
-            type="button"
-            onClick={() => setShowConditionsEditor(!showConditionsEditor)}
-            className="bg-[#0B1D16]/90 backdrop-blur-xl text-[#F4EFE6] px-3.5 py-2 rounded-full text-xs font-semibold border border-[#D4AF37]/30 hover:bg-[#133528] transition flex items-center gap-1.5 shadow-lg"
-            title="Vastu Compass Direction"
-          >
-            <Compass className="w-4 h-4 text-[#D4AF37] animate-spin-slow" />
-            <span className="text-[11px] font-bold text-[#F6D985]">{compassDirectionName} ({compassHeading}°)</span>
-          </button>
-
-          {/* 3D Fallback Switcher */}
-          {onSwitchTo3DPlanner && (
-            <button
-              type="button"
-              onClick={() => onSwitchTo3DPlanner(activePlant)}
-              className="luxury-btn-secondary text-[#F4EFE6] px-3.5 py-2 rounded-full text-xs font-bold border border-[#D4AF37]/30 transition shadow-lg hidden sm:flex items-center gap-1"
-            >
-              <span>3D Garden View</span>
-            </button>
-          )}
-
-          {/* Camera Flip button */}
-          {streamActive && (
-            <button
-              type="button"
-              onClick={() => {
-                const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
-                setCameraFacing(nextFacing);
-                startCameraStream(nextFacing);
-              }}
-              className="p-2.5 rounded-full bg-[#0B1D16]/90 backdrop-blur-xl text-white border border-[#D4AF37]/30 hover:bg-[#133528] transition shadow-lg"
-              title="Flip Camera"
-            >
-              <RotateCw className="w-4 h-4 text-[#D4AF37]" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 4. REAL-TIME SPOT SUITABILITY DETECTION RADAR HUD */}
-      {showPlacementRadar && (
-        <div className="relative z-30 px-3 sm:px-5 mt-2 flex flex-col items-center pointer-events-auto animate-fadeIn">
-          <div className={`w-full max-w-xl backdrop-blur-2xl rounded-2xl p-3 border transition-all duration-300 shadow-2xl ${placementSuitability.badgeClass}`}>
-            <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
-              <div className="flex items-center gap-2">
-                <span className={`w-3 h-3 rounded-full shrink-0 ${
-                  placementSuitability.status === 'optimal'
-                    ? 'bg-[#10B981] animate-ping'
-                    : placementSuitability.status === 'moderate'
-                    ? 'bg-[#F59E0B]'
-                    : 'bg-[#EF4444]'
-                }`} />
-                <span className="text-xs font-serif font-bold tracking-wider uppercase">
-                  {placementSuitability.hudHeadline}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-black/40 border border-white/15">
-                  Suitability: {placementSuitability.overallScore}%
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAutoAlignToBestSpot}
-                  title="Auto-detect best Vastu spot"
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/20 hover:bg-[#D4AF37]/40 text-[#F6D985] border border-[#D4AF37]/40 transition flex items-center gap-1 cursor-pointer"
-                >
-                  <Compass className="w-3 h-3" />
-                  <span>Auto-Find Spot</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Diagnostic Metrics Chips */}
-            <div className="grid grid-cols-3 gap-1.5 pt-2 text-[10px]">
-              {/* Vastu chip */}
-              <div className={`p-1.5 rounded-xl border flex flex-col justify-between ${
-                placementSuitability.vastuMatch
-                  ? 'bg-[#0E281E]/80 border-[#10B981]/40 text-[#68D391]'
-                  : 'bg-black/30 border-amber-500/30 text-amber-300'
-              }`}>
-                <span className="font-semibold uppercase text-[9px] text-[#A3C1AD]">Vastu Zone</span>
-                <span className="font-bold truncate mt-0.5">
-                  {placementSuitability.currentDirection} {placementSuitability.vastuMatch ? '✓ Aligned' : '⚠️ Deviated'}
-                </span>
-              </div>
-
-              {/* Light chip */}
-              <div className={`p-1.5 rounded-xl border flex flex-col justify-between ${
-                placementSuitability.lightMatch
-                  ? 'bg-[#0E281E]/80 border-[#10B981]/40 text-[#68D391]'
-                  : 'bg-black/30 border-amber-500/30 text-amber-300'
-              }`}>
-                <span className="font-semibold uppercase text-[9px] text-[#A3C1AD]">Light Level</span>
-                <span className="font-bold truncate mt-0.5">
-                  {placementSuitability.lightLevelDetected} ({cameraLuminance} luma) {placementSuitability.lightMatch ? '✓ Ideal' : '⚠️ Adjust'}
-                </span>
-              </div>
-
-              {/* Surface & clearance chip */}
-              <div className="p-1.5 rounded-xl border bg-[#0E281E]/80 border-[#10B981]/40 text-[#68D391] flex flex-col justify-between">
-                <span className="font-semibold uppercase text-[9px] text-[#A3C1AD]">Clearance</span>
-                <span className="font-bold truncate mt-0.5">
-                  {activePlant.spacingRequiredFt || 1.5} ft Radius ✓ Plane
-                </span>
-              </div>
-            </div>
-
-            {/* Actionable guidance message & quick place button */}
-            <div className="pt-2 flex items-center justify-between gap-2">
-              <p className="text-[10px] leading-tight text-[#E8E2D5] italic flex-1">
-                {placementSuitability.hudSubtitle}
-              </p>
-
-              {placementSuitability.status === 'optimal' && !isPlantPlaced && (
-                <button
-                  type="button"
-                  onClick={handlePlacePlant}
-                  className="px-3.5 py-1.5 rounded-full luxury-btn-gold text-[#081711] text-[11px] font-bold shadow-md hover:scale-105 active:scale-95 transition shrink-0 flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Place Here Now</span>
-                </button>
-              )}
-            </div>
+        {/* measurement result */}
+        {measuring && measuredFt !== null && (
+          <div className="px-3 mb-1.5 flex justify-center gap-1.5 pointer-events-auto">
+            <span className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#0B1D16]/95 border border-[#E07A5F]/60 text-[#F4EFE6]">{measuredFt} ft</span>
+            <button type="button" onClick={() => { setGardenDims((d) => ({ ...d, length: measuredFt })); markDirty(); showToast(`Garden length set to ${measuredFt} ft`); }} className="px-3 py-1.5 rounded-full text-[11px] font-bold luxury-btn-secondary border border-[#D4AF37]/30">Use as length</button>
+            <button type="button" onClick={() => { setGardenDims((d) => ({ ...d, width: measuredFt })); markDirty(); showToast(`Garden width set to ${measuredFt} ft`); }} className="px-3 py-1.5 rounded-full text-[11px] font-bold luxury-btn-secondary border border-[#D4AF37]/30">Use as width</button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 5. SCANNING GUIDANCE BANNER (Center Top) */}
-      <div className="relative z-30 px-4 mt-2 flex justify-center pointer-events-none">
-        <div className="bg-[#0B1D16]/95 backdrop-blur-xl px-4 py-1.5 rounded-full border border-[#D4AF37]/40 text-[#F4EFE6] text-xs shadow-2xl flex items-center gap-2 max-w-md text-center">
-          <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-          <span className="text-[11px] font-medium leading-tight">{scanningGuidance}</span>
-        </div>
-      </div>
-
-      {/* 5. EDITABLE CONDITIONS & VASTU MODAL / DROPDOWN */}
-      {showConditionsEditor && (
-        <div className="relative z-40 mx-4 mt-2 max-w-sm self-end luxury-card bg-[#0B1D16]/95 backdrop-blur-2xl p-4 rounded-3xl border border-[#D4AF37]/35 shadow-2xl text-[#F4EFE6] space-y-3 pointer-events-auto animate-fadeIn">
-          <div className="flex items-center justify-between border-b border-[#D4AF37]/25 pb-2">
-            <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">
-              Environmental Calibration
-            </span>
-            <button 
-              onClick={() => setShowConditionsEditor(false)}
-              className="text-[#A3C1AD] hover:text-[#F4EFE6]"
-            >
-              <X className="w-4 h-4" />
+        {/* suggestions */}
+        <div className="px-3 pb-1.5 pointer-events-auto">
+          <div className="max-w-4xl mx-auto bg-[#0B1D16]/90 backdrop-blur-2xl rounded-2xl p-2 border border-[#D4AF37]/30">
+            <button type="button" onClick={() => setShowSuggestions((v) => !v)} className="w-full flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold">
+                Best for the {smartSuggestions[0]?.zone || headingToDirection(viewHeading)} zone
+                <span className="ml-1.5 text-[9px] text-[#68D391]">{placed.length} placed{conflicts.size ? ` · ${conflicts.size} too close` : ''}</span>
+              </span>
+              {showSuggestions ? <ChevronDown className="w-4 h-4 text-[#A3C1AD]" /> : <ChevronUp className="w-4 h-4 text-[#A3C1AD]" />}
             </button>
-          </div>
-
-          <div className="space-y-2 text-xs">
-            <div>
-              <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">Location Type</label>
-              <div className="grid grid-cols-4 gap-1">
-                {(['Indoor', 'Balcony', 'Terrace', 'Outdoor'] as const).map((loc) => (
-                  <button
-                    key={loc}
-                    onClick={() => setSpaceType(loc)}
-                    className={`py-1 px-2 rounded-lg text-[10px] font-bold transition ${
-                      spaceType === loc ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20'
-                    }`}
-                  >
-                    {loc}
+            {showSuggestions && (
+              <div className="flex gap-2 overflow-x-auto pt-1.5 pb-0.5 scrollbar-none">
+                {smartSuggestions.length === 0 && <span className="text-[10px] text-[#A3C1AD] px-1">No plants are traditionally recommended for this zone.</span>}
+                {smartSuggestions.map(({ plant, score }) => (
+                  <button key={plant._id} type="button"
+                    onClick={() => { setActivePlant(plant); setSelectedId(null); }}
+                    className={`flex items-center gap-2 p-1.5 pr-3 rounded-xl border shrink-0 text-left ${plant._id === activePlant._id ? 'bg-[#D4AF37]/20 border-[#D4AF37]' : 'bg-[#0E281E]/70 border-[#D4AF37]/20'}`}>
+                    <img src={plant.image} alt="" className="w-9 h-9 rounded-lg object-cover" loading="lazy" />
+                    <span>
+                      <strong className="block text-[11px] font-serif truncate max-w-[110px]">{plant.name.split(' (')[0]}</strong>
+                      <span className="text-[9px] text-[#F6D985] font-bold">{score}% match</span>
+                    </span>
                   </button>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
+        </div>
 
-            <div>
-              <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">Sunlight Level</label>
-              <div className="grid grid-cols-3 gap-1">
-                {(['High', 'Medium', 'Low'] as const).map((sun) => (
-                  <button
-                    key={sun}
-                    onClick={() => setDetectedSunlight(sun)}
-                    className={`py-1 px-2 rounded-lg text-[10px] font-bold transition ${
-                      detectedSunlight === sun ? 'luxury-btn-copper text-white' : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20'
-                    }`}
-                  >
-                    {sun} Sun
-                  </button>
-                ))}
+        {/* bottom controls */}
+        <div className="px-3 pb-3 pt-1 bg-gradient-to-t from-[#081711] via-[#081711]/90 to-transparent pointer-events-auto">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* active / selected plant */}
+            <div className="flex items-center gap-2.5 bg-[#0B1D16]/90 p-2 rounded-2xl border border-[#D4AF37]/30 sm:w-72">
+              <img src={focusPlant.image} alt="" className="w-11 h-11 rounded-xl object-cover border border-[#D4AF37]/30" />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-serif font-bold luxury-gold-text truncate">{focusPlant.name}</h4>
+                <p className="text-[10px] text-[#68D391] font-semibold truncate">
+                  {selected ? 'Selected · ' : 'Placing · '}
+                  {(estimatePlantHeightM(focusPlant) * (selected?.scale || 1) * M_TO_FT).toFixed(1)} ft tall · {spacingFt(focusPlant)} ft spacing
+                </p>
               </div>
+              <button type="button" onClick={() => { setCatalogDirection(spot.found && spot.zone !== 'Center' ? spot.zone : headingToDirection(viewHeading)); setShowCatalog(true); }}
+                className="py-1.5 px-2.5 rounded-xl luxury-btn-secondary text-[11px] font-bold border border-[#D4AF37]/30">Change</button>
             </div>
 
-            <div>
-              <label className="text-[10px] text-[#A3C1AD] uppercase font-semibold block mb-1">Compass Direction ({compassDirectionName})</label>
-              <input
-                type="range"
-                min="0"
-                max="360"
-                step="5"
-                value={compassHeading}
-                onChange={(e) => setCompassHeading(Number(e.target.value))}
-                className="w-full accent-[#D4AF37]"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 6. CENTER NOTIFICATION TOAST */}
-      {saveSuccessMsg && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-[#0E281E]/95 backdrop-blur-xl border border-[#68D391]/50 px-5 py-2.5 rounded-full text-[#F4EFE6] text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-[#68D391]" />
-          <span>{saveSuccessMsg}</span>
-        </div>
-      )}
-
-      <div className="flex-1" />
-
-      {/* 7. BOTTOM DOCK: COMPACT SMART SUGGESTION CAROUSEL */}
-      <div className="relative z-30 px-3 sm:px-5 pb-2 pointer-events-auto">
-        <div className="luxury-card bg-[#0B1D16]/95 backdrop-blur-2xl rounded-3xl p-3 border border-[#D4AF37]/30 shadow-2xl space-y-2">
-          
-          {/* Suggestion Bar Header with Drawer Toggle */}
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-              <span className="text-[11px] font-bold text-[#F4EFE6] tracking-wide">
-                Smart Suggestions for {compassDirectionName} {spaceType}
-              </span>
-              <span className="text-[9px] text-[#68D391] bg-[#0E281E] px-2 py-0.5 rounded-full border border-[#68D391]/30 font-bold">
-                {detectedSunlight} Sun
-              </span>
+            {/* transform tools */}
+            <div className="flex items-center justify-center gap-0.5 bg-[#0B1D16]/90 p-1 rounded-2xl border border-[#D4AF37]/30">
+              {iconBtn('Rotate left', () => updateSelected((p) => ({ ...p, rotation: p.rotation - 15 })), <RotateCcw className="w-4 h-4" />, false, !selected)}
+              {iconBtn('Rotate right', () => updateSelected((p) => ({ ...p, rotation: p.rotation + 15 })), <RotateCw className="w-4 h-4" />, false, !selected)}
+              {iconBtn('Bigger', () => updateSelected((p) => ({ ...p, scale: Math.min(2, Math.round((p.scale + 0.1) * 10) / 10) })), <ZoomIn className="w-4 h-4" />, false, !selected)}
+              {iconBtn('Smaller', () => updateSelected((p) => ({ ...p, scale: Math.max(0.5, Math.round((p.scale - 0.1) * 10) / 10) })), <ZoomOut className="w-4 h-4" />, false, !selected)}
+              {iconBtn('Move to crosshair', moveSelectedToSpot, <Move className="w-4 h-4" />, false, !selected || !spot.locked)}
+              {iconBtn('Duplicate', duplicateSelected, <Copy className="w-4 h-4" />, false, !selected)}
+              {iconBtn('Delete', deleteSelected, <Trash2 className="w-4 h-4" />, false, !selected)}
+              {iconBtn('Measure', () => { setMeasuring((v) => !v); setMeasurePts([]); setSelectedId(null); }, <Ruler className="w-4 h-4" />, measuring)}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowSuggestionsDrawer(!showSuggestionsDrawer)}
-              className="text-[#A3C1AD] hover:text-[#F4EFE6] p-1"
-            >
-              {showSuggestionsDrawer ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </button>
-          </div>
-
-          {/* Plant Suggestion Horizontal Scroll Carousel */}
-          {showSuggestionsDrawer && (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {smartSuggestions.slice(0, 6).map(({ plant, score, reasons }) => {
-                const isCurrent = plant._id === activePlant._id;
-                return (
-                  <button
-                    key={plant._id}
-                    type="button"
-                    onClick={() => {
-                      setActivePlant(plant);
-                      setScanningGuidance(`Switched to ${plant.name}. Tap screen to preview in space.`);
-                    }}
-                    className={`flex items-center gap-2.5 p-2 rounded-2xl border text-left shrink-0 transition-all ${
-                      isCurrent
-                        ? 'bg-[#D4AF37]/20 border-[#D4AF37] shadow-md ring-1 ring-[#D4AF37]'
-                        : 'bg-[#0E281E]/70 border-[#D4AF37]/20 hover:border-[#D4AF37]/45 text-[#A3C1AD]'
-                    }`}
-                  >
-                    <img
-                      src={plant.image}
-                      alt={plant.name}
-                      className="w-10 h-10 rounded-xl object-cover shrink-0 border border-[#D4AF37]/30"
-                    />
-                    <div className="pr-2">
-                      <div className="flex items-center gap-1.5">
-                        <strong className="text-xs font-serif font-bold text-[#F4EFE6] truncate max-w-[110px]">
-                          {plant.name.split(' ')[0]}
-                        </strong>
-                        <span className="text-[9px] font-bold text-[#F6D985]">{score}%</span>
-                      </div>
-                      <span className="text-[10px] text-[#A3C1AD] block truncate max-w-[120px]">
-                        {reasons[0] || plant.traditionalUses.slice(0, 20)}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+            {/* primary actions */}
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={handlePlace} disabled={measuring}
+                className="flex-1 sm:flex-initial py-3 px-5 rounded-full luxury-btn-gold text-[#081711] font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40">
+                <Check className="w-4 h-4" /> Place here
+              </button>
+              <button type="button" onClick={handleSave} disabled={isSaving || !placed.length}
+                className="flex-1 sm:flex-initial py-3 px-5 rounded-full luxury-btn-copper text-white font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40">
+                <Save className="w-4 h-4" />
+                {isSaving ? 'Saving…' : savedGardenId ? (dirtySinceSave ? 'Update garden' : 'Saved ✓') : `Save (${placed.length})`}
+              </button>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* 8. MAIN AR ACTION CONTROLS HUD (Place, Rotate, Resize, Reset, Save, Catalog) */}
-      <div className="relative z-30 p-3 sm:p-5 bg-gradient-to-t from-[#081711] via-[#081711]/95 to-transparent pointer-events-auto">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          
-          {/* Active Plant Identity Pill */}
-          <div className="flex items-center gap-3 bg-[#0B1D16]/90 backdrop-blur-xl p-2.5 rounded-2xl border border-[#D4AF37]/30 w-full sm:w-auto shadow-lg">
-            <img
-              src={activePlant.image}
-              alt={activePlant.name}
-              className="w-12 h-12 rounded-xl object-cover border border-[#D4AF37]/30 shrink-0"
-            />
-            <div className="flex-1 min-w-0 pr-2">
-              <h4 className="text-sm font-serif font-bold luxury-gold-text truncate">
-                {activePlant.name}
-              </h4>
-              <p className="text-[10px] text-[#A3C1AD] font-mono italic truncate">
-                {activePlant.scientificName}
-              </p>
-              <div className="flex items-center gap-2 mt-0.5 text-[10px] text-[#68D391] font-semibold">
-                <span>Height: {estimatedPhysicalHeightFt} ft</span>
-                <span>• Spacing: {activePlant.spacingRequiredFt || 1.5} ft</span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowPlantCatalog(true)}
-              className="py-1.5 px-3 rounded-xl luxury-btn-secondary text-[#F4EFE6] text-xs font-bold border border-[#D4AF37]/30 transition shrink-0"
-            >
-              Change
-            </button>
-          </div>
-
-          {/* Transform & Mode Controls (Rotate, Scale, Measure, Reset) */}
-          <div className="flex items-center gap-1.5 bg-[#0B1D16]/90 backdrop-blur-xl p-2 rounded-2xl border border-[#D4AF37]/30 text-[#F4EFE6] shadow-lg">
-            
-            {/* Rotate Button */}
-            <button
-              type="button"
-              onClick={() => setPlantRotation((prev) => (prev + 45) % 360)}
-              className="p-2.5 rounded-xl hover:bg-[#0E281E] text-[#D4AF37] transition active:scale-95"
-              title="Rotate Plant 45°"
-            >
-              <RotateCw className="w-4 h-4 text-[#D4AF37]" />
-            </button>
-
-            {/* Scale Up */}
-            <button
-              type="button"
-              onClick={() => setPlantScale((prev) => Math.min(2.5, Math.round((prev + 0.15) * 100) / 100))}
-              className="p-2.5 rounded-xl hover:bg-[#0E281E] text-[#68D391] transition active:scale-95"
-              title="Grow / Scale Up"
-            >
-              <ZoomIn className="w-4 h-4 text-[#68D391]" />
-            </button>
-
-            {/* Scale Down */}
-            <button
-              type="button"
-              onClick={() => setPlantScale((prev) => Math.max(0.5, Math.round((prev - 0.15) * 100) / 100))}
-              className="p-2.5 rounded-xl hover:bg-[#0E281E] text-[#68D391] transition active:scale-95"
-              title="Shrink / Scale Down"
-            >
-              <ZoomOut className="w-4 h-4 text-[#68D391]" />
-            </button>
-
-            {/* AR Measurement Mode */}
-            <button
-              type="button"
-              onClick={() => {
-                setMeasuringMode(!measuringMode);
-                if (!measuringMode) {
-                  setMeasurePointA(null);
-                  setMeasurePointB(null);
-                  setScanningGuidance('Measurement Mode: Tap Point A on the floor, then Point B.');
-                } else {
-                  setScanningGuidance('Returned to Plant Placement mode.');
-                }
-              }}
-              className={`p-2.5 rounded-xl transition active:scale-95 ${
-                measuringMode ? 'luxury-btn-copper text-white' : 'hover:bg-[#0E281E] text-[#A3C1AD]'
-              }`}
-              title="Measure Garden Space (AR Tap-to-Measure)"
-            >
-              <Ruler className="w-4 h-4 text-[#E07A5F]" />
-            </button>
-
-            {/* Reset */}
-            <button
-              type="button"
-              onClick={handleResetPlacement}
-              className="p-2.5 rounded-xl hover:bg-[#0E281E] text-[#A3C1AD] hover:text-[#F4EFE6] transition active:scale-95"
-              title="Reset Placement & Rescan"
-            >
-              <RefreshCw className="w-4 h-4 text-[#A3C1AD]" />
-            </button>
-          </div>
-
-          {/* Primary Action Buttons: Place Plant & Save to Garden */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={handlePlacePlant}
-              className="flex-1 sm:flex-initial py-3 px-6 rounded-full luxury-btn-gold text-[#081711] font-bold text-xs tracking-wider transition shadow-lg flex items-center justify-center gap-2"
-            >
-              <Check className="w-4 h-4 text-[#081711]" />
-              <span>{isPlantPlaced ? 'Reposition Plant' : 'Place Plant'}</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={handleSaveToGarden}
-              className="py-3 px-6 rounded-full luxury-btn-copper text-white font-bold text-xs tracking-wider transition shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4 text-white" />
-              <span>{isSaving ? 'Saving...' : 'Save to Garden'}</span>
-            </button>
           </div>
         </div>
       </div>
 
-      {/* 9. CHANGE PLANT CATALOG MODAL */}
-      {showPlantCatalog && (
-        <div className="absolute inset-0 z-50 bg-[#081711]/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-          <div className="w-full max-w-md luxury-card bg-[#0B1D16]/98 rounded-3xl p-5 shadow-2xl text-[#F4EFE6] border border-[#D4AF37]/35 space-y-3 max-h-[85vh] flex flex-col">
+      {/* plant catalog */}
+      {showCatalog && (
+        <div className="absolute inset-0 z-50 bg-[#081711]/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md luxury-card bg-[#0B1D16] rounded-3xl p-5 border border-[#D4AF37]/35 space-y-3 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[#D4AF37]/25 pb-3">
               <div>
-                <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block">
-                  VASTU BOTANICAL DIRECTORY
-                </span>
-                <h4 className="text-lg font-serif font-bold luxury-gold-text">
-                  Choose Plant for AR View
-                </h4>
+                <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block">Vastu botanical directory</span>
+                <h4 className="text-lg font-serif font-bold luxury-gold-text">Choose a plant to place</h4>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowPlantCatalog(false)}
-                className="p-1 rounded-full text-[#A3C1AD] hover:text-[#F4EFE6]"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <button type="button" onClick={() => setShowCatalog(false)} aria-label="Close"><X className="w-5 h-5 text-[#A3C1AD]" /></button>
             </div>
-
-            {/* Vastu Direction Filter Bar */}
-            <div className="py-1.5 border-b border-[#D4AF37]/20">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-medium text-[#A3C1AD]">
-                  Vastu Orientation Zone:
-                </span>
-                <span className="text-[11px] font-bold text-[#F6D985]">
-                  {catalogDirMeta.name} • {catalogDirMeta.sanskrit}
-                </span>
+            <div>
+              <div className="flex items-center justify-between mb-1.5 text-[11px]">
+                <span className="text-[#A3C1AD]">Zone</span>
+                <span className="font-bold text-[#F6D985]">{catalogDirMeta.name} · {catalogDirMeta.sanskrit}</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {Object.keys(VASTU_DIRECTIONS).map((dirKey) => {
-                  const isSelected = canonicalCatalogDir === dirKey;
-                  return (
-                    <button
-                      key={dirKey}
-                      type="button"
-                      onClick={() => setSelectedCatalogDirection(dirKey)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 ${
-                        isSelected
-                          ? 'luxury-btn-gold text-[#081711] shadow-xs'
-                          : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#F4EFE6]'
-                      }`}
-                    >
-                      {dirKey}
-                    </button>
-                  );
-                })}
+                {Object.keys(VASTU_DIRECTIONS).map((d) => (
+                  <button key={d} type="button" onClick={() => setCatalogDirection(d)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${canonicalCatalogDir === d ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0E281E] text-[#A3C1AD] border border-[#D4AF37]/20'}`}>{d}</button>
+                ))}
               </div>
-              <p className="text-[10px] text-[#A3C1AD] mt-1 italic">
-                Showing only plants auspicious for {canonicalCatalogDir} ({catalogDirMeta.element}).
-              </p>
             </div>
-
             <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {vastuFilteredCatalogPlants.length === 0 ? (
-                <div className="p-6 text-center luxury-card bg-[#0E281E]/40 border border-[#D4AF37]/20 rounded-2xl my-4">
-                  <AlertTriangle className="w-7 h-7 text-[#D4AF37] mx-auto mb-2 opacity-80" />
-                  <h5 className="text-sm font-serif font-bold text-[#F4EFE6]">
-                    No Species Auspicious for {canonicalCatalogDir}
-                  </h5>
-                  <p className="text-xs text-[#A3C1AD] mt-1">
-                    Select another direction pill above to preview other plants.
-                  </p>
-                </div>
+              {catalogList.length === 0 ? (
+                <p className="text-center text-xs text-[#A3C1AD] py-8">No plants are traditionally recommended for {canonicalCatalogDir}.</p>
               ) : (
-                vastuFilteredCatalogPlants.map((plant) => (
-                  <div
-                    key={plant._id}
-                    onClick={() => {
-                      setActivePlant(plant);
-                      setShowPlantCatalog(false);
-                      setScanningGuidance(`Selected ${plant.name}. Point phone at floor to position.`);
-                    }}
-                    className={`p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
-                      plant._id === activePlant._id
-                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 shadow-md'
-                        : 'border-[#D4AF37]/20 bg-[#0E281E]/70 hover:border-[#D4AF37]/50 hover:bg-[#0E281E]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={plant.image}
-                        alt={plant.name}
-                        className="w-12 h-12 rounded-xl object-cover border border-[#D4AF37]/30 shrink-0"
-                      />
-                      <div>
-                        <h5 className="text-xs sm:text-sm font-serif font-bold text-[#F4EFE6]">
-                          {plant.name}
-                        </h5>
-                        <span className="text-[10px] text-[#A3C1AD] font-mono italic block">
-                          {plant.scientificName}
-                        </span>
-                        <span className="text-[9px] text-[#F6D985] font-semibold mt-0.5 block">
-                          {canonicalCatalogDir} • {plant.ayushSystem} • Spacing {plant.spacingRequiredFt || 1.5} ft
-                        </span>
-                      </div>
-                    </div>
-
-                    <span className="text-xs font-bold text-[#F6D985]">Preview →</span>
-                  </div>
+                catalogList.map((plant) => (
+                  <button key={plant._id} type="button"
+                    onClick={() => { setActivePlant(plant); setSelectedId(null); setShowCatalog(false); }}
+                    className={`w-full p-2.5 rounded-2xl border flex items-center gap-3 text-left ${plant._id === activePlant._id ? 'border-[#D4AF37] bg-[#D4AF37]/15' : 'border-[#D4AF37]/20 bg-[#0E281E]/70 hover:border-[#D4AF37]/50'}`}>
+                    <img src={plant.image} alt="" className="w-12 h-12 rounded-xl object-cover" loading="lazy" />
+                    <span className="min-w-0">
+                      <strong className="block text-sm font-serif truncate">{plant.name}</strong>
+                      <span className="block text-[10px] text-[#A3C1AD] italic truncate">{plant.scientificName}</span>
+                      <span className="block text-[9px] text-[#F6D985] font-semibold">{plant.sunlight.split(' (')[0]} sun · {spacingFt(plant)} ft spacing</span>
+                    </span>
+                  </button>
                 ))
               )}
-            </div>
-
-            <div className="pt-2.5 border-t border-[#D4AF37]/25 flex justify-between items-center text-xs text-[#A3C1AD]">
-              <span>{vastuFilteredCatalogPlants.length} auspicious species for {canonicalCatalogDir}</span>
-              <button
-                type="button"
-                onClick={() => setShowPlantCatalog(false)}
-                className="text-[#F6D985] font-semibold hover:underline"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
