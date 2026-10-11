@@ -1009,6 +1009,196 @@
       "totalSquareFeet": 96,
       "createdAt": "2026-10-09T05:03:55.650Z",
       "updatedAt": "2026-10-09T05:03:55.650Z"
+    },
+    {
+      "_id": "garden_1791652121503_nibafj",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "Brahmi (Water Hyssop) - AR Space Layout",
+      "roomType": "Balcony",
+      "length": 10,
+      "width": 8,
+      "direction": "North-East",
+      "plants": [
+        {
+          "id": "placed_ar_1791652121488",
+          "plantId": "plant_5",
+          "name": "Brahmi (Water Hyssop)",
+          "scientificName": "Bacopa monnieri",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+          "x": 50,
+          "y": 50,
+          "rotation": 0,
+          "scale": 1,
+          "model3D": {
+            "type": "brahmi",
+            "potColor": "#588157",
+            "foliageColor": "#52b788",
+            "flowerColor": "#e0e1dd",
+            "heightScale": 0.6,
+            "leafDensity": 1.5
+          },
+          "potSizeFt": 1,
+          "spacingRequiredFt": 1.5,
+          "plantHeightFt": 1.5
+        }
+      ],
+      "notes": "AR Placed with scale 1x. Orientation: North-East. Sunlight: High",
+      "unit": "ft",
+      "totalSquareFeet": 80,
+      "createdAt": "2026-10-10T17:08:41.504Z",
+      "updatedAt": "2026-10-10T17:08:41.504Z"
+    },
+    {
+      "_id": "garden_1791652129812_gbsta7",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "Brahmi (Water Hyssop) - AR Space Layout",
+      "roomType": "Balcony",
+      "length": 10,
+      "width": 8,
+      "direction": "North",
+      "plants": [
+        {
+          "id": "placed_ar_1791652129800",
+          "plantId": "plant_5",
+          "name": "Brahmi (Water Hyssop)",
+          "scientificName": "Bacopa monnieri",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+          "x": 50,
+          "y": 50,
+          "rotation": 0,
+          "scale": 1,
+          "model3D": {
+            "type": "brahmi",
+            "potColor": "#588157",
+            "foliageColor": "#52b788",
+            "flowerColor": "#e0e1dd",
+            "heightScale": 0.6,
+            "leafDensity": 1.5
+          },
+          "potSizeFt": 1,
+          "spacingRequiredFt": 1.5,
+          "plantHeightFt": 1.5
+        }
+      ],
+      "notes": "AR Placed with scale 1x. Orientation: North. Sunlight: High",
+      "unit": "ft",
+      "totalSquareFeet": 80,
+      "createdAt": "2026-10-10T17:08:49.812Z",
+      "updatedAt": "2026-10-10T17:08:49.812Z"
+    },
+    {
+      "_id": "garden_1791652140094_6pintx",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "Brahmi (Water Hyssop) - AR Space Layout",
+      "roomType": "Balcony",
+      "length": 10,
+      "width": 8,
+      "direction": "North",
+      "plants": [
+        {
+          "id": "placed_ar_1791652140083",
+          "plantId": "plant_5",
+          "name": "Brahmi (Water Hyssop)",
+          "scientificName": "Bacopa monnieri",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+          "x": 50,
+          "y": 50,
+          "rotation": 0,
+          "scale": 1,
+          "model3D": {
+            "type": "brahmi",
+            "potColor": "#588157",
+            "foliageColor": "#52b788",
+            "flowerColor": "#e0e1dd",
+            "heightScale": 0.6,
+            "leafDensity": 1.5
+          },
+          "potSizeFt": 1,
+          "spacingRequiredFt": 1.5,
+          "plantHeightFt": 1.5
+        }
+      ],
+      "notes": "AR Placed with scale 1x. Orientation: North. Sunlight: High",
+      "unit": "ft",
+      "totalSquareFeet": 80,
+      "createdAt": "2026-10-10T17:09:00.094Z",
+      "updatedAt": "2026-10-10T17:09:00.094Z"
+    },
+    {
+      "_id": "garden_1791652141227_h499ts",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "Brahmi (Water Hyssop) - AR Space Layout",
+      "roomType": "Balcony",
+      "length": 10,
+      "width": 8,
+      "direction": "North",
+      "plants": [
+        {
+          "id": "placed_ar_1791652141221",
+          "plantId": "plant_5",
+          "name": "Brahmi (Water Hyssop)",
+          "scientificName": "Bacopa monnieri",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+          "x": 50,
+          "y": 50,
+          "rotation": 0,
+          "scale": 1,
+          "model3D": {
+            "type": "brahmi",
+            "potColor": "#588157",
+            "foliageColor": "#52b788",
+            "flowerColor": "#e0e1dd",
+            "heightScale": 0.6,
+            "leafDensity": 1.5
+          },
+          "potSizeFt": 1,
+          "spacingRequiredFt": 1.5,
+          "plantHeightFt": 1.5
+        }
+      ],
+      "notes": "AR Placed with scale 1x. Orientation: North. Sunlight: High",
+      "unit": "ft",
+      "totalSquareFeet": 80,
+      "createdAt": "2026-10-10T17:09:01.227Z",
+      "updatedAt": "2026-10-10T17:09:01.227Z"
+    },
+    {
+      "_id": "garden_1791652142501_yxvfsz",
+      "userId": "user_1791383395743_sjbapm",
+      "gardenName": "Brahmi (Water Hyssop) - AR Space Layout",
+      "roomType": "Balcony",
+      "length": 10,
+      "width": 8,
+      "direction": "North",
+      "plants": [
+        {
+          "id": "placed_ar_1791652142497",
+          "plantId": "plant_5",
+          "name": "Brahmi (Water Hyssop)",
+          "scientificName": "Bacopa monnieri",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+          "x": 50,
+          "y": 50,
+          "rotation": 0,
+          "scale": 1,
+          "model3D": {
+            "type": "brahmi",
+            "potColor": "#588157",
+            "foliageColor": "#52b788",
+            "flowerColor": "#e0e1dd",
+            "heightScale": 0.6,
+            "leafDensity": 1.5
+          },
+          "potSizeFt": 1,
+          "spacingRequiredFt": 1.5,
+          "plantHeightFt": 1.5
+        }
+      ],
+      "notes": "AR Placed with scale 1x. Orientation: North. Sunlight: High",
+      "unit": "ft",
+      "totalSquareFeet": 80,
+      "createdAt": "2026-10-10T17:09:02.501Z",
+      "updatedAt": "2026-10-10T17:09:02.501Z"
     }
   ],
   "savedPlants": [],
@@ -1215,9 +1405,81 @@
       "category": "Herbal Garden & Vastu Knowledge",
       "answers": [],
       "completedAt": "2026-10-09T09:35:47.999Z"
+    },
+    {
+      "_id": "qres_1791652254444_1vu0v4",
+      "userId": "user_1791383395743_sjbapm",
+      "score": 8,
+      "totalQuestions": 10,
+      "category": "Herbal Garden & Vastu Knowledge",
+      "answers": [],
+      "completedAt": "2026-10-10T17:10:54.444Z"
     }
   ],
   "userActivities": [
+    {
+      "_id": "act_1791652488115",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-10T17:14:48.115Z"
+    },
+    {
+      "_id": "act_1791652254448",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "TAKE_QUIZ",
+      "details": "Completed AYUSH Quiz: Scored 8/10 (80%)",
+      "timestamp": "2026-10-10T17:10:54.448Z"
+    },
+    {
+      "_id": "act_1791652142505",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Brahmi (Water Hyssop) - AR Space Layout\" with 1 plants",
+      "timestamp": "2026-10-10T17:09:02.505Z"
+    },
+    {
+      "_id": "act_1791652141231",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Brahmi (Water Hyssop) - AR Space Layout\" with 1 plants",
+      "timestamp": "2026-10-10T17:09:01.231Z"
+    },
+    {
+      "_id": "act_1791652140097",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Brahmi (Water Hyssop) - AR Space Layout\" with 1 plants",
+      "timestamp": "2026-10-10T17:09:00.097Z"
+    },
+    {
+      "_id": "act_1791652129815",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Brahmi (Water Hyssop) - AR Space Layout\" with 1 plants",
+      "timestamp": "2026-10-10T17:08:49.815Z"
+    },
+    {
+      "_id": "act_1791652121507",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "PLAN_GARDEN",
+      "details": "Designed garden layout \"Brahmi (Water Hyssop) - AR Space Layout\" with 1 plants",
+      "timestamp": "2026-10-10T17:08:41.507Z"
+    },
+    {
+      "_id": "act_1791652062575",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-10T17:07:42.575Z"
+    },
+    {
+      "_id": "act_1791571764569",
+      "userId": "user_1791383395743_sjbapm",
+      "type": "LOGGED_IN",
+      "details": "Logged into herbal garden portal",
+      "timestamp": "2026-10-09T18:49:24.569Z"
+    },
     {
       "_id": "act_1791568573122",
       "userId": "user_1791383395743_sjbapm",
