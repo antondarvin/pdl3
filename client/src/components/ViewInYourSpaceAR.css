@@ -1,0 +1,353 @@
+/*
+ * View in Your Space – responsive layout
+ * Plain (unlayered) CSS, so these rules override Tailwind utilities where they overlap.
+ *
+ * Breakpoints
+ *   ≤ 359px   very small phones (iPhone SE 1st gen, small Androids)
+ *   360–639   phones, portrait (base layout)
+ *   landscape phones: (orientation: landscape) and (max-height: 520px) → side panel
+ *   640–1023  tablets / small laptops
+ *   ≥ 1024    desktop
+ *   ≥ 1440    large desktop
+ * Plus: notch safe areas, touch vs mouse, reduced motion, dynamic viewport height.
+ */
+
+/* ---------- base (all devices) ---------- */
+.vys-root {
+  height: 100vh;
+  height: 100dvh; /* mobile browsers: excludes the URL bar */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+.vys-overlay {
+  /* respect notches / home indicator (needs viewport-fit=cover in index.html) */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+/* Portrait / default: the panel wrapper is invisible so its children flow in the overlay column */
+.vys-panel {
+  display: contents;
+}
+
+.vys-toast {
+  max-width: calc(100% - 1.5rem);
+  text-align: center;
+}
+
+.vys-tools {
+  flex-wrap: wrap;
+}
+
+.vys-catalog-card {
+  max-height: min(85vh, 85dvh);
+}
+
+/* ---------- very small phones ---------- */
+@media (max-width: 359px) {
+  .vys-topbar,
+  .vys-modes,
+  .vys-hud,
+  .vys-suggest,
+  .vys-controls {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .vys-status {
+    max-width: 9.5rem;
+  }
+
+  /* 4 chips do not fit: 2 × 2 grid */
+  .vys-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vys-modes button {
+    padding: 0.3rem 0.6rem;
+    font-size: 10px;
+  }
+
+  .vys-icon-btn {
+    padding: 0.45rem;
+  }
+
+  .vys-actions button {
+    padding: 0.65rem 0.75rem;
+    font-size: 11px;
+  }
+
+  .vys-guidance {
+    display: none; /* HUD text already carries the guidance */
+  }
+
+  .vys-catalog {
+    padding: 0.5rem;
+  }
+
+  .vys-catalog-card {
+    padding: 0.9rem;
+    border-radius: 1.25rem;
+  }
+}
+
+/* ---------- narrow phones (≤ 399px): all 8 tool buttons in one even row ---------- */
+@media (max-width: 399px) {
+  .vys-tools {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.125rem;
+  }
+
+  .vys-tools .vys-icon-btn {
+    min-width: 0;
+    min-height: 2.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ---------- short screens in portrait (small phones, split-screen) ---------- */
+@media (orientation: portrait) and (max-height: 640px) {
+  .vys-suggest {
+    display: none; /* keep the camera view visible; suggestions stay reachable via "Change" */
+  }
+
+  .vys-calib {
+    max-height: 40vh;
+  }
+}
+
+/* ---------- landscape phones: controls move into a right-side panel ---------- */
+@media (orientation: landscape) and (max-height: 520px) {
+  .vys-topbar {
+    padding-top: 0.4rem;
+  }
+
+  .vys-modes {
+    margin-top: 0.35rem;
+    max-width: 55%;
+  }
+
+  .vys-crosshair {
+    /* centre of the free (left) area, not the whole screen */
+    left: calc((100% - min(42vw, 380px)) / 2);
+  }
+
+  .vys-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    position: absolute;
+    top: calc(3.25rem + env(safe-area-inset-top, 0px));
+    right: env(safe-area-inset-right, 0px);
+    bottom: env(safe-area-inset-bottom, 0px);
+    width: min(42vw, 380px);
+    padding: 0 0.5rem 0.5rem;
+    overflow-y: auto;
+    pointer-events: auto;
+    scrollbar-width: thin;
+  }
+
+  .vys-panel > * {
+    flex-shrink: 0;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .vys-spacer,
+  .vys-guidance {
+    display: none;
+  }
+
+  .vys-hud > div {
+    max-width: none;
+  }
+
+  .vys-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vys-calib {
+    width: 100% !important;
+    max-height: none;
+    align-self: stretch;
+  }
+
+  .vys-toast {
+    position: fixed;
+    left: calc((100% - min(42vw, 380px)) / 2);
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    max-width: 50vw;
+    margin: 0;
+  }
+
+  .vys-controls {
+    background: none;
+    padding-bottom: 0;
+  }
+
+  .vys-controls-inner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .vys-plant-card {
+    width: auto !important;
+  }
+
+  .vys-catalog-card {
+    max-width: 36rem;
+  }
+
+  .vys-catalog-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .vys-catalog-list > * {
+    margin-top: 0 !important;
+  }
+}
+
+/* ---------- tablets ---------- */
+@media (min-width: 640px) and (max-width: 1023px) and (min-height: 521px) {
+  .vys-hud > div {
+    max-width: 40rem;
+  }
+
+  .vys-controls-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .vys-catalog-card {
+    max-width: 34rem;
+  }
+
+  .vys-catalog-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .vys-catalog-list > * {
+    margin-top: 0 !important;
+  }
+}
+
+/* ---------- desktop ---------- */
+@media (min-width: 1024px) {
+  .vys-topbar {
+    padding: 1rem 1.5rem 0;
+  }
+
+  .vys-modes {
+    padding-left: 1.5rem;
+  }
+
+  .vys-hud > div {
+    max-width: 44rem;
+  }
+
+  .vys-calib {
+    position: absolute;
+    top: 4.5rem;
+    right: 1.5rem;
+    margin: 0;
+    width: 22rem !important;
+    max-height: calc(100vh - 6rem);
+    z-index: 5;
+  }
+
+  .vys-controls {
+    padding: 0.5rem 1.5rem 1.25rem;
+  }
+
+  .vys-controls-inner {
+    max-width: 72rem;
+  }
+
+  .vys-catalog-card {
+    max-width: 48rem;
+  }
+
+  .vys-catalog-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .vys-catalog-list > * {
+    margin-top: 0 !important;
+  }
+}
+
+/* ---------- large desktop ---------- */
+@media (min-width: 1440px) {
+  .vys-overlay {
+    font-size: 1.05rem;
+  }
+
+  .vys-hud > div {
+    max-width: 52rem;
+  }
+
+  .vys-chips span:last-child {
+    font-size: 13px;
+  }
+
+  .vys-controls-inner {
+    max-width: 80rem;
+  }
+}
+
+/* ---------- touch screens: bigger tap targets (≈44 px) ---------- */
+@media (pointer: coarse) {
+  .vys-icon-btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .vys-modes button,
+  .vys-measure button,
+  .vys-calib button {
+    min-height: 2.25rem;
+  }
+
+  .vys-calib input[type='range'] {
+    height: 1.75rem;
+  }
+
+  .vys-calib input[type='number'] {
+    font-size: 16px; /* stops iOS zooming into the input */
+  }
+}
+
+/* ---------- mouse / trackpad users ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .vys-icon-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .vys-root *,
+  .vys-root *::before,
+  .vys-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

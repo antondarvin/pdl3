@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Plant, PlacedPlant } from '../types';
+import './ViewInYourSpaceAR.css';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { detectARCapabilities, ARCapabilityReport, requestOrientationPermission } from '../utils/arCapabilities';
@@ -63,6 +64,17 @@ interface SpotInfo {
 const EMPTY_SPOT: SpotInfo = { found: false, locked: false, zone: 'Center', inside: true, crowdedBy: null, crowdGapCm: 0 };
 const SUN_TO_LUMA: Record<SunLevel, number> = { High: 185, Medium: 120, Low: 60 };
 const COLORS = { ok: 0x10b981, warn: 0xf59e0b, bad: 0xef4444, gold: 0xd4af37 };
+// Field of view that matches a phone's rear camera for the current orientation.
+const arFov = (aspect: number) => (aspect >= 1 ? 45 : 63);
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+// Small touch screens: render at a lower pixel ratio to keep the frame rate smooth.
+const pixelRatioFor = () => {
+  const dpr = window.devicePixelRatio || 1;
+  const smallTouch = window.matchMedia?.('(pointer: coarse) and (max-width: 480px)').matches;
+  return Math.min(dpr, smallTouch ? 1.5 : 2);
+};
+
 const uid = () => `placed_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
 export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
@@ -133,6 +145,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
   const analyzerRef = useRef<FrameAnalyzer | null>(null);
 
   const modeRef = useRef<ViewMode>('3d');
+  const reducedMotionRef = useRef(prefersReducedMotion());
   const placedRef = useRef<PlacedItem[]>([]);
   const activePlantRef = useRef(activePlant);
   const frameRef = useRef<GardenFrame | null>(null);
@@ -347,7 +360,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
     const h = container.clientHeight || window.innerHeight;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(pixelRatioFor());
     renderer.setSize(w, h);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -427,7 +440,9 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
       const nw = container.clientWidth || window.innerWidth;
       const nh = container.clientHeight || window.innerHeight;
       camera.aspect = nw / nh;
+      if (modeRef.current !== '3d') camera.fov = arFov(camera.aspect);
       camera.updateProjectionMatrix();
+      renderer.setPixelRatio(pixelRatioFor());
       renderer.setSize(nw, nh);
     });
     ro.observe(container);
@@ -575,7 +590,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
         (spacing.material as THREE.MeshBasicMaterial).color.setHex(color);
         spacing.visible = !measuringRef.current;
         spacing.scale.setScalar(Math.max(0.12, (spacingFt(plant) * FT_TO_M) / 2));
-        const pulse = locked ? 1 : 1 + Math.sin(performance.now() / 160) * 0.08;
+        const pulse = locked || reducedMotionRef.current ? 1 : 1 + Math.sin(performance.now() / 160) * 0.08;
         reticle.children[0].scale.setScalar(pulse);
       }
     }
@@ -600,7 +615,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
     if (floorRef.current) floorRef.current.visible = is3d;
     if (gridRef.current) gridRef.current.visible = is3d;
     if (shadowRef.current) shadowRef.current.visible = !is3d;
-    cam.fov = is3d ? 50 : 63; // typical phone rear-camera vertical FOV in portrait ≈ 60–65°
+    cam.fov = is3d ? 50 : arFov(cam.aspect); // phone rear camera ≈ 63° portrait / 45° landscape
     cam.updateProjectionMatrix();
     hoverRef.current = null;
     lockSinceRef.current = 0;
@@ -1124,14 +1139,14 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
       aria-label={title}
       disabled={disabled}
       onClick={onClick}
-      className={`p-2.5 rounded-xl transition active:scale-95 disabled:opacity-30 ${active ? 'luxury-btn-copper text-white' : 'hover:bg-[#0E281E] text-[#D4AF37]'}`}
+      className={`vys-icon-btn p-2.5 rounded-xl transition active:scale-95 disabled:opacity-30 ${active ? 'luxury-btn-copper text-white' : 'hover:bg-[#0E281E] text-[#D4AF37]'}`}
     >
       {icon}
     </button>
   );
 
   return (
-    <div ref={rootRef} className="fixed inset-0 z-50 bg-[#081711] overflow-hidden select-none font-sans text-[#F4EFE6]">
+    <div ref={rootRef} className="vys-root fixed inset-0 z-50 bg-[#081711] overflow-hidden select-none font-sans text-[#F4EFE6]">
       {/* camera feed (always mounted so the stream can attach) */}
       <video
         ref={videoRef}
@@ -1156,16 +1171,16 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
 
       {/* center crosshair for AR modes */}
       {mode !== '3d' && !measuring && (
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6">
+        <div className="vys-crosshair pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6">
           <div className="absolute inset-x-0 top-1/2 h-px bg-white/60" />
           <div className="absolute inset-y-0 left-1/2 w-px bg-white/60" />
         </div>
       )}
 
       {/* ---------- overlay UI ---------- */}
-      <div ref={uiRef} className="absolute inset-0 flex flex-col pointer-events-none">
+      <div ref={uiRef} className="vys-overlay absolute inset-0 flex flex-col pointer-events-none">
         {/* top bar */}
-        <div className="pt-3 px-3 flex items-center justify-between gap-2 pointer-events-auto">
+        <div className="vys-topbar pt-3 px-3 flex items-center justify-between gap-2 pointer-events-auto">
           <div className="flex items-center gap-2 min-w-0">
             <button
               type="button"
@@ -1176,7 +1191,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
             >
               <ArrowLeft className="w-5 h-5 text-[#D4AF37]" />
             </button>
-            <div className="bg-[#0B1D16]/90 backdrop-blur-xl px-3 py-1.5 rounded-full border border-[#D4AF37]/30 shadow-lg min-w-0">
+            <div className="vys-status bg-[#0B1D16]/90 backdrop-blur-xl px-3 py-1.5 rounded-full border border-[#D4AF37]/30 shadow-lg min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full shrink-0 ${spot.locked ? 'bg-[#68D391]' : 'bg-[#D4AF37] animate-pulse'}`} />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#F6D985] truncate">{statusLabel}</span>
@@ -1199,7 +1214,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
         </div>
 
         {/* mode switcher */}
-        <div className="px-3 mt-2 flex flex-wrap gap-1.5 pointer-events-auto">
+        <div className="vys-modes px-3 mt-2 flex flex-wrap gap-1.5 pointer-events-auto">
           {capabilities?.supportsImmersiveAR && (
             <button type="button" disabled={xrStarting} onClick={() => switchMode('webxr')}
               className={`px-3 py-1.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${mode === 'webxr' ? 'luxury-btn-gold text-[#081711]' : 'bg-[#0B1D16]/90 border-[#D4AF37]/30'}`}>
@@ -1231,10 +1246,12 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
           <p className="mx-3 mt-1.5 text-[10px] text-amber-300 bg-black/50 rounded-lg px-2 py-1 self-start pointer-events-auto">{cameraError}</p>
         )}
 
+        {/* responsive panel: transparent wrapper on portrait (display: contents), side column on landscape phones */}
+        <div className="vys-panel">
         {/* spot detection HUD */}
-        <div className="px-3 mt-2 pointer-events-auto">
+        <div className="vys-hud px-3 mt-2 pointer-events-auto">
           <div className={`max-w-xl mx-auto bg-[#0B1D16]/90 backdrop-blur-2xl rounded-2xl p-2.5 border shadow-2xl ${toneClass(spotStatus)}`}>
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="vys-chips grid grid-cols-4 gap-1.5">
               {chip('Surface', spot.locked ? 'Locked' : spot.found ? 'Steadying' : 'Searching', spot.locked ? 'ok' : spot.found ? 'warn' : 'none')}
               {chip('Vastu zone', spot.found ? `${spot.zone}${spotZoneMatch ? ' ✓' : ''}` : '—', !spot.found ? 'none' : spotZoneMatch ? 'ok' : 'warn')}
               {chip('Light', `${suitability.lightLevelDetected}${cameraLuma !== null ? ` · ${cameraLuma}` : ''}`, suitability.lightMatch ? 'ok' : 'warn')}
@@ -1260,7 +1277,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
 
         {/* calibration / garden settings */}
         {showCalibration && (
-          <div className="mx-3 mt-2 self-end w-[min(100%-1.5rem,22rem)] bg-[#0B1D16]/95 backdrop-blur-2xl p-3.5 rounded-2xl border border-[#D4AF37]/35 shadow-2xl space-y-3 pointer-events-auto max-h-[50vh] overflow-y-auto">
+          <div className="vys-calib mx-3 mt-2 self-end w-[min(100%-1.5rem,22rem)] bg-[#0B1D16]/95 backdrop-blur-2xl p-3.5 rounded-2xl border border-[#D4AF37]/35 shadow-2xl space-y-3 pointer-events-auto max-h-[50vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">Space &amp; compass</span>
               <button type="button" onClick={() => setShowCalibration(false)} aria-label="Close"><X className="w-4 h-4 text-[#A3C1AD]" /></button>
@@ -1318,16 +1335,16 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
 
         {/* toast */}
         {toast && (
-          <div className={`self-center mt-2 px-4 py-2 rounded-full text-xs font-bold shadow-2xl bg-[#0B1D16]/95 backdrop-blur-xl border flex items-center gap-2 pointer-events-none ${toneClass(toast.tone)}`}>
+          <div className={`vys-toast self-center mt-2 px-4 py-2 rounded-full text-xs font-bold shadow-2xl bg-[#0B1D16]/95 backdrop-blur-xl border flex items-center gap-2 pointer-events-none ${toneClass(toast.tone)}`}>
             {toast.tone === 'ok' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
             <span>{toast.text}</span>
           </div>
         )}
 
-        <div className="flex-1" />
+        <div className="vys-spacer flex-1" />
 
         {/* guidance */}
-        <div className="px-3 mb-1.5 flex justify-center pointer-events-none">
+        <div className="vys-guidance px-3 mb-1.5 flex justify-center pointer-events-none">
           <span className="bg-[#0B1D16]/90 backdrop-blur-xl px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[10px] text-[#E8E2D5] text-center">
             <Sparkles className="w-3 h-3 inline mr-1 text-[#D4AF37]" />{guidance}
           </span>
@@ -1335,7 +1352,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
 
         {/* measurement result */}
         {measuring && measuredFt !== null && (
-          <div className="px-3 mb-1.5 flex justify-center gap-1.5 pointer-events-auto">
+          <div className="vys-measure px-3 mb-1.5 flex flex-wrap justify-center gap-1.5 pointer-events-auto">
             <span className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#0B1D16]/95 border border-[#E07A5F]/60 text-[#F4EFE6]">{measuredFt} ft</span>
             <button type="button" onClick={() => { setGardenDims((d) => ({ ...d, length: measuredFt })); markDirty(); showToast(`Garden length set to ${measuredFt} ft`); }} className="px-3 py-1.5 rounded-full text-[11px] font-bold luxury-btn-secondary border border-[#D4AF37]/30">Use as length</button>
             <button type="button" onClick={() => { setGardenDims((d) => ({ ...d, width: measuredFt })); markDirty(); showToast(`Garden width set to ${measuredFt} ft`); }} className="px-3 py-1.5 rounded-full text-[11px] font-bold luxury-btn-secondary border border-[#D4AF37]/30">Use as width</button>
@@ -1343,7 +1360,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
         )}
 
         {/* suggestions */}
-        <div className="px-3 pb-1.5 pointer-events-auto">
+        <div className="vys-suggest px-3 pb-1.5 pointer-events-auto">
           <div className="max-w-4xl mx-auto bg-[#0B1D16]/90 backdrop-blur-2xl rounded-2xl p-2 border border-[#D4AF37]/30">
             <button type="button" onClick={() => setShowSuggestions((v) => !v)} className="w-full flex items-center justify-between px-1">
               <span className="text-[11px] font-bold">
@@ -1372,10 +1389,10 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
         </div>
 
         {/* bottom controls */}
-        <div className="px-3 pb-3 pt-1 bg-gradient-to-t from-[#081711] via-[#081711]/90 to-transparent pointer-events-auto">
-          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div className="vys-controls px-3 pb-3 pt-1 bg-gradient-to-t from-[#081711] via-[#081711]/90 to-transparent pointer-events-auto">
+          <div className="vys-controls-inner max-w-4xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* active / selected plant */}
-            <div className="flex items-center gap-2.5 bg-[#0B1D16]/90 p-2 rounded-2xl border border-[#D4AF37]/30 sm:w-72">
+            <div className="vys-plant-card flex items-center gap-2.5 bg-[#0B1D16]/90 p-2 rounded-2xl border border-[#D4AF37]/30 sm:w-72">
               <img src={focusPlant.image} alt="" className="w-11 h-11 rounded-xl object-cover border border-[#D4AF37]/30" />
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-serif font-bold luxury-gold-text truncate">{focusPlant.name}</h4>
@@ -1389,7 +1406,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
             </div>
 
             {/* transform tools */}
-            <div className="flex items-center justify-center gap-0.5 bg-[#0B1D16]/90 p-1 rounded-2xl border border-[#D4AF37]/30">
+            <div className="vys-tools flex items-center justify-center gap-0.5 bg-[#0B1D16]/90 p-1 rounded-2xl border border-[#D4AF37]/30">
               {iconBtn('Rotate left', () => updateSelected((p) => ({ ...p, rotation: p.rotation - 15 })), <RotateCcw className="w-4 h-4" />, false, !selected)}
               {iconBtn('Rotate right', () => updateSelected((p) => ({ ...p, rotation: p.rotation + 15 })), <RotateCw className="w-4 h-4" />, false, !selected)}
               {iconBtn('Bigger', () => updateSelected((p) => ({ ...p, scale: Math.min(2, Math.round((p.scale + 0.1) * 10) / 10) })), <ZoomIn className="w-4 h-4" />, false, !selected)}
@@ -1401,7 +1418,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
             </div>
 
             {/* primary actions */}
-            <div className="flex items-center gap-2">
+            <div className="vys-actions flex items-center gap-2">
               <button type="button" onClick={handlePlace} disabled={measuring}
                 className="flex-1 sm:flex-initial py-3 px-5 rounded-full luxury-btn-gold text-[#081711] font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-40">
                 <Check className="w-4 h-4" /> Place here
@@ -1414,12 +1431,13 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
             </div>
           </div>
         </div>
+        </div>{/* /vys-panel */}
       </div>
 
       {/* plant catalog */}
       {showCatalog && (
-        <div className="absolute inset-0 z-50 bg-[#081711]/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md luxury-card bg-[#0B1D16] rounded-3xl p-5 border border-[#D4AF37]/35 space-y-3 max-h-[85vh] flex flex-col">
+        <div className="vys-catalog absolute inset-0 z-50 bg-[#081711]/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="vys-catalog-card w-full max-w-md luxury-card bg-[#0B1D16] rounded-3xl p-5 border border-[#D4AF37]/35 space-y-3 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[#D4AF37]/25 pb-3">
               <div>
                 <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block">Vastu botanical directory</span>
@@ -1439,7 +1457,7 @@ export const ViewInYourSpaceAR: React.FC<ViewInYourSpaceARProps> = ({
                 ))}
               </div>
             </div>
-            <div className="overflow-y-auto space-y-2 flex-1 pr-1">
+            <div className="vys-catalog-list overflow-y-auto space-y-2 flex-1 pr-1">
               {catalogList.length === 0 ? (
                 <p className="text-center text-xs text-[#A3C1AD] py-8">No plants are traditionally recommended for {canonicalCatalogDir}.</p>
               ) : (
